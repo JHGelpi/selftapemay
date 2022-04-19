@@ -30,12 +30,6 @@ export function buttonFilterInstagram_click(event) {
 }
 
 /**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
-
-/**
 *	Adds an event handler that runs when an input element's value
  is changed.
 	[Read more](https://www.wix.com/corvid/reference/$w.ValueMixin.html#onChange)
@@ -108,4 +102,57 @@ export function buttonResetFilter_click(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
 	$w("#datasetSelfTapeMayParticipation").setFilter(wixData.filter());
+	$w("#rangeSliderSelfTapes").value=[0,16];
+	$w("#inputInstagram").value = "";
+}
+
+/**
+*	Adds an event handler that runs when the element is clicked.
+	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
+*	 @param {$w.MouseEvent} event
+*/
+export function buttonFilterSlider_click(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+	let sliderMin = $w("#rangeSliderSelfTapes").value[0]
+	let sliderMax = $w("#rangeSliderSelfTapes").value[1]
+	let marketValue = $w("#dropdownMarket").value
+	let instagramFilter = $w('#inputInstagram').value
+	console.log("Instagram handle value" + instagramFilter)
+	console.log("Slider min value: " + sliderMin)
+	console.log("Slider max value: " + sliderMax)
+	console.log("Market value is: " + marketValue)
+	
+	// init the filter
+	//HUGE credit to the answer given here: https://www.wix.com/velo/forum/coding-with-velo/add-a-filter-to-dataset-but-also-keep-the-previous-filter
+	 var filter = wixData.filter();
+
+	//Filter for Self Tapes
+	if (sliderMin == 0 && sliderMax == 16) {
+		//do nothing
+		console.log("I did nothing to filter slider")
+	} else {
+		//Filter for self tape #
+		filter = filter.between("selfTapes", sliderMin - 1, sliderMax + 1);
+	}
+
+	//Filter for Market
+	if (marketValue == "") {
+		//do nothing
+		console.log("I did nothing because Market Value = " + marketValue)
+	} else {
+		//Apply market filter
+		filter = filter.eq("market", marketValue)
+	}
+	
+	//Filter for Instagram Handle
+	if (instagramFilter == "") {
+		//Do nothing
+		console.log("I did nothing because instagram value == " + instagramFilter)
+	} else {
+		//Filter for Instagram handle
+		filter = filter.contains("instagramHandle", instagramFilter)
+	}
+	//Apply filter
+	$w("#datasetSelfTapeMayParticipation").setFilter(filter);	
 }

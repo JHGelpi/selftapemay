@@ -44,6 +44,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().ascending("market"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.ascending("market")
+			.descending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -53,6 +54,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.descending("market")
+			.descending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -62,6 +64,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.ascending("yearsParticipatedBefore")
+			.descending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -71,6 +74,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.descending("yearsParticipatedBefore")
+			.descending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -88,6 +92,7 @@ export function buttonResetSort_click(event) {
 	//$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("selfTapes"), wixData.sort().ascending("_updatedDate"));
 
 	$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
+		.descending("leaderBoardRank")
   		.descending("selfTapes")
   		.ascending("_updatedDate")
 );

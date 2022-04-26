@@ -119,14 +119,17 @@ export function buttonSave_click(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
   //let selfTapeDate = Date.now();
-  let selfTapeDate = wixTimestamp();
+  //let selfTapeDate = wixTimestamp();
   //let selfTapeDate = getTimestamp();
-  $w("#datasetSelfTapeParticipant").setFieldValue("selfTapesUpdateDate", new Date(selfTapeDate));
-  $w("#datasetSelfTapeParticipant").save();
+  //$w("#datasetSelfTapeParticipant").setFieldValue("selfTapesUpdateDate", new Date(selfTapeDate));
+  //$w("#datasetSelfTapeParticipant").setFieldValue
+  //$w("#datasetSelfTapeParticipant").save();
+  updateSelfTapesTimestamp($w("#inputEmail").value);
 
   rankLeaderboard();
 
 }
+
 function wixTimestamp () {
   var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
   var d = new Date();
@@ -144,11 +147,35 @@ function wixTimestamp () {
     curr_ampm = "AM"
   }
   var curr_min = d.getMinutes();
+  var curr_sec = d.getSeconds();
   var curr_time = d.getTime();
 
   //mmmm dd, yyyy hh:mm pm
 
-  return curr_month + " " + curr_date + ", " + curr_year + " " + curr_hr + ":" + curr_min + " " + curr_ampm;
+  return curr_month + " " + curr_date + ", " + curr_year + " " + curr_hr + ":" + curr_min + " " + /*curr_sec + " " + */curr_ampm;
+}
+
+function updateSelfTapesTimestamp(updateEmail) {
+  //Update the data set with the timestamp for the specific person updating this form
+  let timeStamp = new Date(wixTimestamp());
+
+   wixData.query("SelfTapeMayParticipationData")
+    .eq("emailAddress", updateEmail)
+    .find()
+      .then( (results) => {
+        if(results.items.length > 0) {
+          let item = results.items[0];
+          item.selfTapesUpdateDate = timeStamp; // updated last name
+          wixData.update("SelfTapeMayParticipationData", item);
+          console.log("Just updated email " + updateEmail + " with a time stamp of:")
+          console.log(timeStamp)
+        } else {
+          // handle case where no matching items found
+        }
+      } )
+      .catch( (err) => {
+        let errorMsg = err;
+    } );
 }
 
 function rankLeaderboard() { 

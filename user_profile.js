@@ -109,24 +109,15 @@ $w.onReady(function () {
     })
   
 });
-
 /**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
-export function buttonSave_click(event) {
+ *	Adds an event handler that runs just after a save.
+ */
+export /*async*/ function datasetSelfTapeParticipant_afterSave() {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
-  //let selfTapeDate = Date.now();
-  //let selfTapeDate = wixTimestamp();
-  //let selfTapeDate = getTimestamp();
-  //$w("#datasetSelfTapeParticipant").setFieldValue("selfTapesUpdateDate", new Date(selfTapeDate));
-  //$w("#datasetSelfTapeParticipant").setFieldValue
-  //$w("#datasetSelfTapeParticipant").save();
-  updateSelfTapesTimestamp($w("#inputEmail").value);
-
-  rankLeaderboard();
+  /*await*/ updateSelfTapesTimestamp($w("#inputEmail").value);
+  //$w("#datasetSelfTapeParticipant").refresh;
+  //await rankLeaderboard();
 
 }
 
@@ -158,17 +149,23 @@ function wixTimestamp () {
 function updateSelfTapesTimestamp(updateEmail) {
   //Update the data set with the timestamp for the specific person updating this form
   let timeStamp = new Date(wixTimestamp());
-
+  console.log(updateEmail);
+  console.log(timeStamp);
    wixData.query("SelfTapeMayParticipationData")
     .eq("emailAddress", updateEmail)
     .find()
       .then( (results) => {
         if(results.items.length > 0) {
           let item = results.items[0];
+          console.log(item)
           item.selfTapesUpdateDate = timeStamp; // updated last name
+          console.log(item.selfTapesUpdateDate)
           wixData.update("SelfTapeMayParticipationData", item);
-          console.log("Just updated email " + updateEmail + " with a time stamp of:")
-          console.log(timeStamp)
+          /*
+          *item.selfTapes = results.items[0].selfTapes;
+          *console.log(item.selfTapes)
+          *wixData.update("SelfTapeMayParticipationData", item);
+          */
         } else {
           // handle case where no matching items found
         }
@@ -187,28 +184,9 @@ function rankLeaderboard() {
 		.then( (results) => {
     		if(results.items.length > 0) {
 				for(let i = 0; i < results.items.length; i++) {
-					let toUpdate = {
-						"_id": results.items[i]._id,
-						"leaderBoardRank": i + 1,
-						"selfTapes": results.items[i].selfTapes,
-						"instagramHandle": results.items[i].instagramHandle,
-						"market": results.items[i].market,
-						"witcherSides": results.items[i].witcherSides,
-						"emailAddress": results.items[i].emailAddress,
-						"participatedBefore": results.items[i].participatedBefore,
-						"yearsParticipatedBefore": results.items[i].yearsParticipatedBefore,
-						"recorded16Before": results.items[i].recorded16Before,
-						"yearsRecorded16Before": results.items[i].yearsRecorded16Before,
-						"selfTapesUpdateDate": results.items[i].selfTapesUpdateDate
-					};
-
-					wixData.update("SelfTapeMayParticipationData", toUpdate)
-						.then ( (results) => {
-							let item = results;
-						})
-						.catch( (err) => {
-							let errorMsg = err;
-						})
+          let item = results.items[i];
+          item.leaderBoardRank = i + 1;
+          wixData.update("SelfTapeMayParticipationData", item);
 				}
     		} else {
      			// handle case where no matching items found

@@ -15,10 +15,6 @@ $w.onReady(function () {
             return member.loginEmail;
             
         })
-    //console.log("userEmail value AFTER currentMember function: ")
-    //console.log(userEmail)
-    //console.log("--------------------")
-//-------------------------------------
 
   let user = wixUsers.currentUser;
   //console.log("Current User: " + user)
@@ -84,24 +80,14 @@ $w.onReady(function () {
                 console.log("Done refreshing datasetSelfTapeParticipant");
               } );
               /**********************DONE REFRESHING******************** */
-              //console.log("Insert record complete.")
-              //console.log("Filtering...")
-              /*********************************************************************************************************** */
-              //console.log("Filtering for the following email address:")
-              //console.log(toInsert.emailAddress)
-              //console.log("------------------------------------------")
               $w("#datasetSelfTapeParticipant").setFilter(wixData.filter().eq("emailAddress", toInsert.emailAddress));
               //********************************************************************************************************************* */
           } else {
             //email must exist so I just need to filter for the email address value
             /*********************************************************************************************************** */
-            //console.log("Filtering for the following email address:")
-            //console.log(toInsert.emailAddress)
-            //console.log("------------------------------------------")
             $w("#datasetSelfTapeParticipant").setFilter(wixData.filter().eq("emailAddress", toInsert.emailAddress));
             //********************************************************************************************************************* */
           }
-          //console.log(results.items);
         } );
 
     });
@@ -112,12 +98,8 @@ $w.onReady(function () {
 /**
  *	Adds an event handler that runs just after a save.
  */
-export /*async*/ function datasetSelfTapeParticipant_afterSave() {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-  /*await*/ updateSelfTapesTimestamp($w("#inputEmail").value);
-  //$w("#datasetSelfTapeParticipant").refresh;
-  //await rankLeaderboard();
+export function datasetSelfTapeParticipant_afterSave() {
+  updateSelfTapesTimestamp($w("#inputEmail").value);
 
 }
 
@@ -161,11 +143,7 @@ function updateSelfTapesTimestamp(updateEmail) {
           item.selfTapesUpdateDate = timeStamp; // updated last name
           console.log(item.selfTapesUpdateDate)
           wixData.update("SelfTapeMayParticipationData", item);
-          /*
-          *item.selfTapes = results.items[0].selfTapes;
-          *console.log(item.selfTapes)
-          *wixData.update("SelfTapeMayParticipationData", item);
-          */
+
         } else {
           // handle case where no matching items found
         }
@@ -173,24 +151,4 @@ function updateSelfTapesTimestamp(updateEmail) {
       .catch( (err) => {
         let errorMsg = err;
     } );
-}
-
-function rankLeaderboard() { 
-
-	wixData.query("SelfTapeMayParticipationData")
-		.descending("selfTapes")
-		.ascending("selfTapesUpdateDate")
-		.find()
-		.then( (results) => {
-    		if(results.items.length > 0) {
-				for(let i = 0; i < results.items.length; i++) {
-          let item = results.items[i];
-          item.leaderBoardRank = i + 1;
-          wixData.update("SelfTapeMayParticipationData", item);
-				}
-    		} else {
-     			// handle case where no matching items found
-			}
-		} )
-
 }

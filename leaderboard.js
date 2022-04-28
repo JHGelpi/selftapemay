@@ -164,6 +164,8 @@ export function buttonFilterSlider_click(event) {
 		//Since the filter is sliderMin - 1 then 2 will force the absolute minimum of the sliderMin value to be 1
 		if (sliderMin == 0) {
 			sliderMin = 2
+		} else if (sliderMax == 1) {
+			sliderMin = 2
 		} else {
 			//do nothing
 		}

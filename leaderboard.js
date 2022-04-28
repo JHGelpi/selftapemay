@@ -2,6 +2,8 @@
 // “Hello, World!” Example: https://learn-code.wix.com/en/article/1-hello-world
 import wixData from 'wix-data';
 import wixUsers from 'wix-users';
+import wixWindow from 'wix-window';
+
 import { currentMember } from 'wix-members'; // Correct
 
 //To do list:
@@ -10,52 +12,30 @@ import { currentMember } from 'wix-members'; // Correct
 //[ ] Figure out how to properly refresh table after ranking has taken place
 
 $w.onReady( function () {
-	// Write your JavaScript here
 
-	// To select an element by ID use: $w('#elementID')
-	
-	// Click 'Preview' to run your code
-	let user = wixUsers.currentUser;
-	user.getEmail().then((email) => {
-    	let userEmail = email; // "user@something.com"
-	
-	//console.log("User logged in email:")
-	//console.log(userEmail)
-
-	$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", userEmail));
-
-	});
 	/************************************************************************* */
 	//Rank the entire population based on self tapes recorded and updated date
 	//This is working as expected 27-apr-2022
 	rankLeaderboard();
 	/************************************************************************* */
-	
-	/*$w("#datasetSelfTapeMayParticipation").refresh()
-  		.then( () => {
-    	console.log("Done refreshing the dataset");
-		$w("#tableSelfTapeMayLeaderboard").refresh();
-		console.log("tableSelfTapeMayLeaderboard should be refreshed.");
-  } );*/
-	
-	/*let user = wixUsers.currentUser;
-	user.getEmail().then((email) => {
-        let userEmail = email;
-	});*/
 
-	/*let userEmail = currentMember.getMember().then((member) => {
-            //console.log("Member email: " + member.loginEmail);
-            let userEmail = member.loginEmail;
-            //console.log("Member email INSIDE currentMember function: " + userEmail);
-            return member.loginEmail;
-            
-        });*/
-		
-	    //$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", user.getEmail()));
-		//console.log(user.getEmail())
+	/************************************************************************ */
+	//This identifies the current user so I can filter the repeater to just 
+	//return the data for the current user.
+	/************************************************************************ */
+	let user = wixUsers.currentUser;
+	user.getEmail().then((email) => {
+    	let userEmail = email;
+
+	$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", userEmail));
+	setTimeout($w("#datasetRepeaterLeaderboard").refresh, 1000);
+	});
+	/************************************************************************* */
+	setTimeout($w("#datasetSelfTapeMayParticipation").refresh, 1000);
 });
 
-function rankLeaderboard() { 
+
+export function rankLeaderboard() { 
 
 	wixData.query("SelfTapeMayParticipationData")
 		.descending("selfTapes")
@@ -71,11 +51,9 @@ function rankLeaderboard() {
     		} else {
      			// handle case where no matching items found
 			}
+
 		} )
-		/*.then( () => {
-			$w("#datasetSelfTapeMayParticipation").refresh();
-			$w("#tableSelfTapeMayLeaderboard").refresh();
-		})*/
+
 
 }
 /**
@@ -111,7 +89,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().ascending("market"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.ascending("market")
-			.descending("leaderBoardRank")
+			.ascending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -121,7 +99,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.descending("market")
-			.descending("leaderBoardRank")
+			.ascending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -131,7 +109,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.ascending("yearsParticipatedBefore")
-			.descending("leaderBoardRank")
+			.ascending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -141,7 +119,7 @@ export function radioGroupSort_change(event) {
         //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.descending("yearsParticipatedBefore")
-			.descending("leaderBoardRank")
+			.ascending("leaderBoardRank")
   			.descending("selfTapes")
   			.ascending("_updatedDate")
 		);
@@ -159,7 +137,7 @@ export function buttonResetSort_click(event) {
 	//$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("selfTapes"), wixData.sort().ascending("_updatedDate"));
 
 	$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
-		.descending("leaderBoardRank")
+		.ascending("leaderBoardRank")
   		.descending("selfTapes")
   		.ascending("_updatedDate")
 );

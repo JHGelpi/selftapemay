@@ -119,14 +119,23 @@ export function buttonResetSort_click(event) {
 		.ascending("leaderBoardRank")
   		.descending("selfTapes")
   		.ascending("_updatedDate")
-);
+	);
+
+	$w("#radioGroupSort").value = ""
 }
 
 export function buttonResetFilter_click(event) {
 	/**This should reset all of the filter options back to default/starting position */
-	$w("#datasetSelfTapeMayParticipation").setFilter(wixData.filter());
+	var filter = wixData.filter();
+	filter = filter.gt("selfTapes", 0);
+	$w("#datasetSelfTapeMayParticipation").setFilter(filter);
 	$w("#rangeSliderSelfTapes").value=[0,16];
 	$w("#inputInstagram").value = "";
+	$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
+		.ascending("leaderBoardRank")
+  		.descending("selfTapes")
+  		.ascending("_updatedDate")
+	);
 }
 
 export function buttonFilterSlider_click(event) {
@@ -150,6 +159,14 @@ export function buttonFilterSlider_click(event) {
 		console.log("I did nothing to filter slider")
 	} else {
 		//Filter for self tape #
+		//This if statement is to make sure the minimum values showing up when filtered are 1
+		//because I don't want people with a 0 self tapes to show up
+		//Since the filter is sliderMin - 1 then 2 will force the absolute minimum of the sliderMin value to be 1
+		if (sliderMin == 0) {
+			sliderMin = 2
+		} else {
+			//do nothing
+		}
 		filter = filter.between("selfTapes", sliderMin - 1, sliderMax + 1);
 	}
 

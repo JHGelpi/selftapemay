@@ -1,16 +1,83 @@
 // API Reference: https://www.wix.com/velo/reference/api-overview/introduction
 // “Hello, World!” Example: https://learn-code.wix.com/en/article/1-hello-world
 import wixData from 'wix-data';
+import wixUsers from 'wix-users';
+import { currentMember } from 'wix-members'; // Correct
 
-$w.onReady(function () {
+//To do list:
+//[x] Identify the logged in users's email address
+//[x] Filter repeater based on that email address
+//[ ] Figure out how to properly refresh table after ranking has taken place
+
+$w.onReady( function () {
 	// Write your JavaScript here
 
 	// To select an element by ID use: $w('#elementID')
 	
 	// Click 'Preview' to run your code
+	let user = wixUsers.currentUser;
+	user.getEmail().then((email) => {
+    	let userEmail = email; // "user@something.com"
+	
+	//console.log("User logged in email:")
+	//console.log(userEmail)
 
+	$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", userEmail));
+
+	});
+	/************************************************************************* */
+	//Rank the entire population based on self tapes recorded and updated date
+	//This is working as expected 27-apr-2022
+	rankLeaderboard();
+	/************************************************************************* */
+	
+	/*$w("#datasetSelfTapeMayParticipation").refresh()
+  		.then( () => {
+    	console.log("Done refreshing the dataset");
+		$w("#tableSelfTapeMayLeaderboard").refresh();
+		console.log("tableSelfTapeMayLeaderboard should be refreshed.");
+  } );*/
+	
+	/*let user = wixUsers.currentUser;
+	user.getEmail().then((email) => {
+        let userEmail = email;
+	});*/
+
+	/*let userEmail = currentMember.getMember().then((member) => {
+            //console.log("Member email: " + member.loginEmail);
+            let userEmail = member.loginEmail;
+            //console.log("Member email INSIDE currentMember function: " + userEmail);
+            return member.loginEmail;
+            
+        });*/
+		
+	    //$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", user.getEmail()));
+		//console.log(user.getEmail())
 });
 
+function rankLeaderboard() { 
+
+	wixData.query("SelfTapeMayParticipationData")
+		.descending("selfTapes")
+		.ascending("selfTapesUpdateDate")
+		.find()
+		.then( (results) => {
+    		if(results.items.length > 0) {
+				for(let i = 0; i < results.items.length; i++) {
+          			let item = results.items[i];
+          			item.leaderBoardRank = i + 1;
+          			wixData.update("SelfTapeMayParticipationData", item);
+				}
+    		} else {
+     			// handle case where no matching items found
+			}
+		} )
+		/*.then( () => {
+			$w("#datasetSelfTapeMayParticipation").refresh();
+			$w("#tableSelfTapeMayLeaderboard").refresh();
+		})*/
+
+}
 /**
 *	Adds an event handler that runs when the element is clicked.
 	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)

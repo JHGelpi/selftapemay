@@ -6,11 +6,6 @@ import wixWindow from 'wix-window';
 
 import { currentMember } from 'wix-members'; // Correct
 
-//To do list:
-//[x] Identify the logged in users's email address
-//[x] Filter repeater based on that email address
-//[ ] Figure out how to properly refresh table after ranking has taken place
-
 $w.onReady( function () {
 
 	/************************************************************************* */
@@ -28,6 +23,9 @@ $w.onReady( function () {
     	let userEmail = email;
 
 	$w("#datasetRepeaterLeaderboard").setFilter(wixData.filter().eq("emailAddress", userEmail));
+	/*I had to use the setTimeout function to wait for data set to be available.
+	I don't know how else to make this work.  The refresh needs to take place AFTER the
+	rankLeaderboard() function has successfully completed. */
 	setTimeout($w("#datasetRepeaterLeaderboard").refresh, 1000);
 	});
 	/************************************************************************* */
@@ -36,7 +34,9 @@ $w.onReady( function () {
 
 
 export function rankLeaderboard() { 
-
+	/*This function is intended to look at all of the entries in the SelfTapeMayParticipationData collection
+	and rank them in order of # of self tapes first and then by the selfTapesUpdateDate field which is updated
+	every time they change their data in the Self Tape May Profile page. */
 	wixData.query("SelfTapeMayParticipationData")
 		.descending("selfTapes")
 		.ascending("selfTapesUpdateDate")
@@ -56,14 +56,9 @@ export function rankLeaderboard() {
 
 
 }
-/**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
-export function buttonFilterInstagram_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+
+/*export function buttonFilterInstagram_click(event) {
+	
 	let instagramFilter = $w('#inputInstagram').value
 	console.log("Instagram handle value" + instagramFilter)
 	$w("#datasetSelfTapeMayParticipation").setFilter(wixData.filter().eq("instagramHandle", instagramFilter));
@@ -72,17 +67,10 @@ export function buttonFilterInstagram_click(event) {
 		.then( () => {
 		console.log("Done refreshing datasetSelfTapeParticipant");
 	} );
-}
+}*/
 
-/**
-*	Adds an event handler that runs when an input element's value
- is changed.
-	[Read more](https://www.wix.com/corvid/reference/$w.ValueMixin.html#onChange)
-*	 @param {$w.Event} event
-*/
 export function radioGroupSort_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+	/*This is used to sort the table tableSelfTapeMayLeaderboard by the indicated options*/ 
 	if ($w("#radioGroupSort").value === 'market_az')
 	//Sort by Market
    {
@@ -106,7 +94,6 @@ export function radioGroupSort_change(event) {
     } 
 	else if ($w("#radioGroupSort").value === 'years_participated_lowhigh') 
   {
-        //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.ascending("yearsParticipatedBefore")
 			.ascending("leaderBoardRank")
@@ -116,7 +103,6 @@ export function radioGroupSort_change(event) {
     }
 	else if ($w("#radioGroupSort").value === 'years_participated_highlow') 
   {
-        //$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("yearsParticipatedBefore"));
 		$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 			.descending("yearsParticipatedBefore")
 			.ascending("leaderBoardRank")
@@ -126,15 +112,8 @@ export function radioGroupSort_change(event) {
     }
 }
 
-/**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
 export function buttonResetSort_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	//$w("#datasetSelfTapeMayParticipation").setSort(wixData.sort().descending("selfTapes"), wixData.sort().ascending("_updatedDate"));
+	/**This should reset the sort of the table tableSelfTapeMayLeaderboard back to the originally intended sort order */
 
 	$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 		.ascending("leaderBoardRank")
@@ -143,27 +122,15 @@ export function buttonResetSort_click(event) {
 );
 }
 
-/**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
 export function buttonResetFilter_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+	/**This should reset all of the filter options back to default/starting position */
 	$w("#datasetSelfTapeMayParticipation").setFilter(wixData.filter());
 	$w("#rangeSliderSelfTapes").value=[0,16];
 	$w("#inputInstagram").value = "";
 }
 
-/**
-*	Adds an event handler that runs when the element is clicked.
-	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
-*	 @param {$w.MouseEvent} event
-*/
 export function buttonFilterSlider_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+	/**This slider will allow the users to filter the table based on the range of self tapes completed that have been selected with the slider */
 	let sliderMin = $w("#rangeSliderSelfTapes").value[0]
 	let sliderMax = $w("#rangeSliderSelfTapes").value[1]
 	let marketValue = $w("#dropdownMarket").value

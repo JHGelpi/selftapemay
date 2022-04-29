@@ -131,6 +131,7 @@ export function buttonResetFilter_click(event) {
 	$w("#datasetSelfTapeMayParticipation").setFilter(filter);
 	$w("#rangeSliderSelfTapes").value=[0,16];
 	$w("#inputInstagram").value = "";
+	$w("#dropdownMarket").value = "";
 	$w("#datasetSelfTapeMayParticipation").setSort( wixData.sort()
 		.ascending("leaderBoardRank")
   		.descending("selfTapes")

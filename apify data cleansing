@@ -1,0 +1,26 @@
+# Data cleansing for apify data import
+# Code writing assisted by ChatGPT :-)
+import csv
+
+# List of column names to keep
+columns_to_keep = ['column_1', 'column_3', 'column_5']
+
+# CSV files
+input_csv = ""
+output_csv = ""
+
+# Read the input CSV file
+with open(input_csv, 'r') as input_file:
+    reader = csv.DictReader(input_file)
+
+    # Write the output CSV file
+    with open(output_csv, 'w', newline='') as output_file:
+        writer = csv.DictWriter(output_file, fieldnames=columns_to_keep)
+
+        # Write the header row
+        writer.writeheader()
+
+        # Write the data rows, keeping only the specified columns
+        for row in reader:
+            output_row = {key: row[key] for key in columns_to_keep}
+            writer.writerow(output_row)

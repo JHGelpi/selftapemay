@@ -1,20 +1,34 @@
 # Data cleansing for apify data import
 # Code writing assisted by ChatGPT :-)
 import csv
+import chardet
+
+# Determine encoding
+def determine_encoding(file_path):
+    with open(file_path, 'rb') as file:
+        result = chardet.detect(file.read())
+    return result['encoding']
 
 # List of column names to keep
-columns_to_keep = ['column_1', 'column_3', 'column_5']
+columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
 
 # CSV files
-input_csv = ""
-output_csv = ""
+input_file = 'inputstm2022.csv'
+
+file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+
+output_csv = file_path + 'output.csv'
+
+input_csv = file_path + input_file
+
+encoding = determine_encoding(input_csv)
 
 # Read the input CSV file
-with open(input_csv, 'r') as input_file:
+with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
 
     # Write the output CSV file
-    with open(output_csv, 'w', newline='') as output_file:
+    with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
         writer = csv.DictWriter(output_file, fieldnames=columns_to_keep)
 
         # Write the header row

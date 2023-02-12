@@ -2,6 +2,13 @@
 # Code writing assisted by ChatGPT :-)
 import csv
 import chardet
+from datetime import datetime
+
+# init variables
+date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+start_dttm = datetime(2022,5,1,0,0,0,1)
+end_dttm = datetime(2022,5,31,23,59,59)
 
 # Determine encoding
 def determine_encoding(file_path):
@@ -29,6 +36,11 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
+
+        # Add a column to the output that will be a calculated field
+        # To determine if a post is eligible for Self Tape May or not
+        # columns_to_keep.append('elig_flag')
+
         writer = csv.DictWriter(output_file, fieldnames=columns_to_keep)
 
         # Write the header row
@@ -36,5 +48,24 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
         # Write the data rows, keeping only the specified columns
         for row in reader:
+            # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
+
+            # Add the '@' symbol to the IG handle to match user profile data
+            # at selftapemay.com
+            output_row['ownerUsername'] = '@' + output_row['ownerUsername']
+
+            # Convert date/time string to formatted date/time stamp
+            if output_row['timestamp'] != '':
+                date_string = output_row['timestamp']
+                #date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+                dt = datetime.strptime(date_string, date_format)
+                output_row['timestamp'] = dt
+
+                # if start_dttm <= dt <= end_dttm:
+                #     output_row['elig_flag'] = 'Y'
+                # else:
+                #     output_row['elig_flag'] = 'N'
+            
+            # Write out data to CSV file
             writer.writerow(output_row)

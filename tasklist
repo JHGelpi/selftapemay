@@ -1,0 +1,37 @@
+Step 1 [ ] Create and document process for scraping #selftapemay2023 hashtag and downloading raw data from apitfy
+  - This process will be manual and will be executed daily
+  - IF I can automate the process it will need to:
+    - Trigger the scraping of data with necessary parameter(s) (hashtag value)
+    - Download the resulting file to D:\consulting\AudreyHelpsActors\
+    - Ideally this will come with the file name of stm2023scrapeddata[datetimestamp].csv
+    - Kick off python script to clean up input file (Step 2)
+  - If manual then the process will be
+    - Trigger scraping of data through the Apify UI
+    - Download the file (manually) to D:\consulting\AudreyHelpsActors\
+    - Name the file stm2023scrapeddata[datetimestamp].csv
+    - kick off the output file cleanup python script (Step 2)
+Step 2 [ ] Create a cleaned up output file.  This file will:
+  - Extract the columns needed from the data extract created at apify
+  - Add the '@' symbol to the `ownerUsername` field
+  - Convert the `timestamp` field to an actual datetime
+  - Export file with the name of output.csv
+Step 3 [ ] Store the data in GCP or Wix.com data collection
+  - Option #1 (GCP)
+    - (Manual)Store all data uploaded from output.csv files.  Data uploaded will be a full replace (not append) to ensure no historical posts were missed.
+    - (Automated)Create a view of the data that is derived from the uploaded output.csv file
+      - The view will determine if the post is an eligible post for Self Tape May by looking at:
+        - Was the post made between eligibility dates (2023-05-01 00:00:00 - 2023-05-31 23:59:59)
+        - Does the post include a video
+        - This will be manifested in the WHERE clause of the view so all records in the view will be counted on the selftapemay.com leaderboard
+          - Exception will be once the data gets into the selftapemay.com data collection users will have the option to exclude themselves from the leaderboard in their profile.  If they do that than the final leaderboard data will filter out their results.
+  - Option #2 (Wix.com)
+    - output.csv will need to determine eligibility of the post and only output the eligible posts
+      - Python script will identify if the post has a video attached
+      - Python script will determine if the post was posted within the required date parameters (2023-05-01 00:00:00 - 2023-05-31 23:59:59)
+      - Python script will only export records that meet these criteria
+    - (Manual) Upload the output.csv file to a data collection created in selftapemay.com
+Step 4 [ ] Join the output.csv data that is now in selftapemay.com (either by an external connection to GCP OR internal data collection) to the user profile data
+  - This will create a view of the data that will be used to populate the leaderboard
+  - The join of the data will be accomplished by users creating a profile on selftapemay.com and providing the appropriate Instagram handle.  The Instagram handle on the user's profile will be matched to the scraped post instagram handle.
+    - Data validation on the user profile data has been implemented to ensure instagram handle starts with the '@' symbol and matches the criteria of Instagram's handle policy.  The regex expression for this: `^@(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,28}$`
+Step 5 [ ] Expose the joined view of data in the form of the leaderboard

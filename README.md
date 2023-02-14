@@ -23,3 +23,23 @@ Steps:
 9) Folder path should match the `file_path` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing) file
 10) Run the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing) python script
 11) Script will output the needed columns in a file named `output.csv`.  This file needs to be uploaded to GCP BigQuery.
+### GCP
+Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing) python script has ran successfully you will need to upload the `output.csv` file into GCP.  To do this:
+1) Log into console.cloud.google.com and navigate to BigQuery
+2) Upload data by using the `Local file` option
+  - There is an `Add Data` button that you need to click
+  - This button will give you a prompt and you need to select `Local file`
+3) You will be presented with prompts:
+  - `Create table from` should have the value of `Upload`
+  - `Select file` should have the `output.csv` file
+  - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
+  - `Project` should be `self-tape-may`
+  - `Dataset` should be `self_tape_may_data`
+  - `Table` should be `tbl-stm-clean-data`
+  - `Table type` should be `Native table`
+  - `Schema` should be `Source file defines the schema`
+  - Under `Advanced options`
+    - `Write preference` should be `Append to table`
+  - All other values should be left to whatever they default to
+  - Click `Create Table`
+  - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table

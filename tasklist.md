@@ -14,6 +14,8 @@
   - Extract the columns needed from the data extract created at apify
   - Add the '@' symbol to the `ownerUsername` field
   - Convert the `timestamp` field to an actual datetime
+  - Identify the "bonus" hashtag and create a flag to represent when someone has leveraged that hashtag
+    - This will require looping through all the hashtag fields in the apify dataset to see if the hashtag exists
   - Export file with the name of output.csv
 - [ ] Step 3: Store the data in GCP or Wix.com data collection
   - Option #1 (GCP)

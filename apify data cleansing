@@ -6,9 +6,8 @@ from datetime import datetime
 
 # init variables
 date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
-
 start_dttm = datetime(2022,5,1,0,0,0,1)
-end_dttm = datetime(2022,5,31,23,59,59)
+end_dttm = datetime(2023,5,31,23,59,59)
 
 # Determine encoding
 def determine_encoding(file_path):
@@ -20,7 +19,8 @@ def determine_encoding(file_path):
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
 
 # CSV files
-input_file = 'inputstm2022.csv'
+#input_file = 'inputstm2022.csv'
+input_file = 'dataset_instagram-hashtag-scraper_2023-02-14_01-23-17-933.csv'
 
 file_path = 'D:\\consulting\\AudreyHelpsActors\\'
 
@@ -37,10 +37,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
 
-        # Add a column to the output that will be a calculated field
-        # To determine if a post is eligible for Self Tape May or not
-        # columns_to_keep.append('elig_flag')
-
         writer = csv.DictWriter(output_file, fieldnames=columns_to_keep)
 
         # Write the header row
@@ -53,6 +49,7 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com
+
             output_row['ownerUsername'] = '@' + output_row['ownerUsername']
 
             # Convert date/time string to formatted date/time stamp
@@ -61,11 +58,7 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
                 #date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
                 dt = datetime.strptime(date_string, date_format)
                 output_row['timestamp'] = dt
-
-                # if start_dttm <= dt <= end_dttm:
-                #     output_row['elig_flag'] = 'Y'
-                # else:
-                #     output_row['elig_flag'] = 'N'
             
             # Write out data to CSV file
-            writer.writerow(output_row)
+            if start_dttm <= dt <= end_dttm and output_row['type'] == 'Video':
+                writer.writerow(output_row)

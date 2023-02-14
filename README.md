@@ -43,3 +43,4 @@ Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main
   - All other values should be left to whatever they default to
   - Click `Create Table`
   - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table
+4) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.

@@ -35,3 +35,5 @@
   - The join of the data will be accomplished by users creating a profile on selftapemay.com and providing the appropriate Instagram handle.  The Instagram handle on the user's profile will be matched to the scraped post instagram handle.
     - Data validation on the user profile data has been implemented to ensure instagram handle starts with the '@' symbol and matches the criteria of Instagram's handle policy.  The regex expression for this: `^@(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,28}$`
 - [ ] Step 5: Expose the joined view of data in the form of the leaderboard
+## Outstanding questions
+- [ ] How do we want to handle people who post more than 16 self tapes?

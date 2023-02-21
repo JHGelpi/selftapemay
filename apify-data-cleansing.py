@@ -16,56 +16,31 @@ def determine_encoding(file_path):
         result = chardet.detect(file.read())
     return result['encoding']
 
-# Determine campaign eligibility
+# Identify the columns in the csv file that include the word
+# `hashtag` in their name.  This will be the starting point for me to
+# loop through the `hashtag` columns to see if they used the campaign
+# hashtag (e.g. `thewitcher`).
 
-def camp_eligible(input_file):#, reader, username):
-    #elig_hashtag = "workingactress"
-    column_list = ['ownerUsername']
-    # ***********************************
-    # Loop through columns to find columns that start with hashtag
-    # ***********************************
+def hashtag_columns(csv_reader):
+    header_row = next(csv_reader)
+    all_cols = []
+    search_string = "hashtag"
+    hashtag_cols = ['ownerUsername']
 
-    # Loop through all of the hashtag columns
-    # This will be used to figure out if people have used specific
-    # hashtags in their post.  This will be used for campaign tracking
-    # (e.g. "Was your self tape a scene from The Witcher?")
+    # Identify all the headers
+    for header in header_row:
+        all_cols.append(header)
 
-    reader_col = csv.reader(input_file)
+    # Figure out which headers start with `hashtag` and create a list
+    # Be sure to make the first list value 'ownerUsername'
 
-    # Loop through each row in the CSV file
-    for row in reader_col:
+    for header in all_cols:
+        if search_string in header:
+            hashtag_cols.append(header)
+            #print("Match found: {}".format(header))
 
-        # Loop through each column in the row
-        for column in enumerate(row):
-
-            # Check if the column starts with 'hashtag'
-            if column.startswith('hashtag'):
-                column_list.append(column)
-
-            print(column_list)
-
-            return column_list
-        #if i > 0:
-            ## Check to see if elig_hashtag is present in any of the 
-            ## identified hashtag columns
-            #for row in reader:
-                #output_row = {key: row[key] for key in column_list}
-
-                ## Loop through the output_row dict
-                ## to check for the hashtag stored in elig_hashtag
-
-                #for value in output_row.items():
-                #    if value == elig_hashtag:
-                #        return True
-                
-            # If we get through the entire data set w/out matching
-            # on the elig_hashtag value then we return a False
-
-            #return False
-
-    # ***********************************
-    # End loop code
-    # ***********************************
+    #print(hashtag_cols)
+    return hashtag_cols
 
 # List of column names to keep
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
@@ -86,6 +61,8 @@ encoding = determine_encoding(input_csv)
 with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
 
+    hashtag_columns = hashtag_columns(reader)
+
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
 
@@ -98,11 +75,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
         for row in reader:
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
-
-            # Determine if each row in the file has participated
-            # In the determined campaign
-
-            camp_elig = camp_eligible(input_file)#, reader, output_row['ownerUsername'])
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com

@@ -19,8 +19,8 @@ Steps:
 5) Click `Save`
 6) Click `Start`
 7) After results are returned export the results to **CSV** file format and save to the local drive
-8) File name should match the `input_file` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing) file
-9) Folder path should match the `file_path` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing) file
+8) File name should match the `input_file` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) file
+9) Folder path should match the `file_path` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) file
 10) Run the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) python script
 11) Script will output the needed columns in a file named `output.csv`.  This file needs to be uploaded to GCP BigQuery.
 ### GCP

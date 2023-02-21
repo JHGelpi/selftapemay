@@ -18,8 +18,8 @@ def determine_encoding(file_path):
 
 # Determine campaign eligibility
 
-def camp_eligible(input_file, reader, username):
-    elig_hashtag = "workingactress"
+def camp_eligible(input_file):#, reader, username):
+    #elig_hashtag = "workingactress"
     column_list = ['ownerUsername']
     # ***********************************
     # Loop through columns to find columns that start with hashtag
@@ -43,6 +43,8 @@ def camp_eligible(input_file, reader, username):
                 column_list.append(column)
 
             print(column_list)
+
+            return column_list
         #if i > 0:
             ## Check to see if elig_hashtag is present in any of the 
             ## identified hashtag columns
@@ -59,7 +61,7 @@ def camp_eligible(input_file, reader, username):
             # If we get through the entire data set w/out matching
             # on the elig_hashtag value then we return a False
 
-            return False
+            #return False
 
     # ***********************************
     # End loop code
@@ -100,7 +102,7 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
             # Determine if each row in the file has participated
             # In the determined campaign
 
-            camp_elig = camp_eligible(input_file, reader, output_row['ownerUsername'])
+            camp_elig = camp_eligible(input_file)#, reader, output_row['ownerUsername'])
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com

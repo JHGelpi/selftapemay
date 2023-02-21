@@ -7,7 +7,7 @@ from datetime import datetime
 # init variables
 date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
 start_dttm = datetime(2022,5,1,0,0,0,1)
-end_dttm = datetime(2023,5,31,23,59,59)
+end_dttm = datetime(2022,5,31,23,59,59)
 
 # Determine encoding
 def determine_encoding(file_path):
@@ -19,8 +19,8 @@ def determine_encoding(file_path):
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
 
 # CSV files
-#input_file = 'inputstm2022.csv'
-input_file = 'dataset_instagram-hashtag-scraper_2023-02-14_01-23-17-933.csv'
+input_file = 'inputstm2022.csv'
+#input_file = 'dataset_instagram-hashtag-scraper_2023-01-17_02-48-20-006.csv'
 
 file_path = 'D:\\consulting\\AudreyHelpsActors\\'
 

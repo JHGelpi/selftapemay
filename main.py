@@ -16,6 +16,35 @@ def determine_encoding(file_path):
         result = chardet.detect(file.read())
     return result['encoding']
 
+# Before the csv file is imported for manipulation 
+# add a column to the file at the end.
+def add_campaign_col(in_file):
+    #import csv
+
+    # Open the CSV file for reading
+    with open('my_csv_file.csv', 'r') as file:
+
+        # Read the contents of the CSV file into a list of rows
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    # Add a header for the new column to the first row
+    rows[0].append('New Column')
+
+    # Iterate through each row and append the value for the new column
+    for row in rows[1:]:
+        # Replace 'new_value' with the value you want to add to the new column
+        row.append('new_value')
+
+    # Open the CSV file for writing
+    with open('my_csv_file.csv', 'w', newline='') as file:
+
+        # Write the updated list of rows to the CSV file
+        writer = csv.writer(file)
+        writer.writerows(rows)
+
+    return False
+
 # Identify the columns in the csv file that include the word
 # `hashtag` in their name.  This will be the starting point for me to
 # loop through the `hashtag` columns to see if they used the campaign

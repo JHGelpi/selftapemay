@@ -20,7 +20,6 @@ def determine_encoding(file_path):
 # `hashtag` in their name.  This will be the starting point for me to
 # loop through the `hashtag` columns to see if they used the campaign
 # hashtag (e.g. `thewitcher`).
-
 def hashtag_columns(csv_reader):
     header_row = next(csv_reader)
     all_cols = []
@@ -33,14 +32,30 @@ def hashtag_columns(csv_reader):
 
     # Figure out which headers start with `hashtag` and create a list
     # Be sure to make the first list value 'ownerUsername'
-
     for header in all_cols:
         if search_string in header:
             hashtag_cols.append(header)
-            #print("Match found: {}".format(header))
 
-    #print(hashtag_cols)
     return hashtag_cols
+
+# Loop through every column that has the `hashtag` in its name
+# and see if the campaign hashtag(s) were mentioned
+def campaign_check(columns, userName, dataRow):
+
+    # This variable identifies the campaign hashtag.
+    # Current assumption is there will only be one campaign hashtag
+    # at a time.
+    camp_hashtag = "audreyhelpsactors"
+
+    # Loop through all of the items in this dictionary
+    # and check to see if the user leveraged the campaign hashtag
+    # If they did use it than the function should return a 'True' value.  Otherwise
+    # the function should return a 'False' value.
+    for key, value in dataRow.items():
+        if value == camp_hashtag:
+            return True
+
+    return False
 
 # List of column names to keep
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
@@ -61,12 +76,14 @@ encoding = determine_encoding(input_csv)
 with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
 
-    hashtag_columns = hashtag_columns(reader)
+    hash_columns = hashtag_columns(reader)
 
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
+        columns_to_write = columns_to_keep
+        #columns_to_write.append('campaignFlag')
 
-        writer = csv.DictWriter(output_file, fieldnames=columns_to_keep)
+        writer = csv.DictWriter(output_file, fieldnames=columns_to_write)
 
         # Write the header row
         writer.writeheader()
@@ -76,10 +93,22 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
 
+            camp_check = campaign_check(hash_columns, output_row['ownerUsername'], {key: row[key] for key in hash_columns})
+
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com
-
             output_row['ownerUsername'] = '@' + output_row['ownerUsername']
+
+            # -------------------------------
+            # OUTSTANDING ITEM
+            # I still need to figure out how to add the boolean flag to an
+            # added column called 'campaignFlag'.  I cannot seem to get this to work
+            # just yet.
+            # -------------------------------
+            if camp_check:
+                output_row['campaignFlag'] = 'Y'
+            #else:
+            #    output_row['campaignFlag'] = 'N'
 
             # Convert date/time string to formatted date/time stamp
             if output_row['timestamp'] != '':

@@ -9,6 +9,10 @@ date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
 start_dttm = datetime(2022,5,1,0,0,0,1)
 end_dttm = datetime(2022,5,31,23,59,59)
 camp_elig = False
+input_file = 'inputstm2022.csv'
+file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+output_csv = file_path + 'output.csv'
+input_csv = file_path + input_file
 
 # Determine encoding
 def determine_encoding(file_path):
@@ -18,18 +22,18 @@ def determine_encoding(file_path):
 
 # Before the csv file is imported for manipulation 
 # add a column to the file at the end.
-def add_campaign_col(in_file):
+def add_campaign_col(in_file, encoding):
     #import csv
 
     # Open the CSV file for reading
-    with open('my_csv_file.csv', 'r') as file:
+    with open(in_file, 'r', encoding=encoding) as file:
 
         # Read the contents of the CSV file into a list of rows
         reader = csv.reader(file)
         rows = list(reader)
 
     # Add a header for the new column to the first row
-    rows[0].append('New Column')
+    rows[0].append('campaignFlag')
 
     ## Iterate through each row and append the value for the new column
     #for row in rows[1:]:
@@ -37,13 +41,13 @@ def add_campaign_col(in_file):
         #row.append('new_value')
 
     # Open the CSV file for writing
-    with open('my_csv_file.csv', 'w', newline='') as file:
+    with open(in_file, 'w', newline='', encoding=encoding) as file:
 
         # Write the updated list of rows to the CSV file
         writer = csv.writer(file)
         writer.writerows(rows)
 
-    return False
+    return
 
 # Identify the columns in the csv file that include the word
 # `hashtag` in their name.  This will be the starting point for me to
@@ -86,20 +90,13 @@ def campaign_check(columns, userName, dataRow):
 
     return False
 
-# List of column names to keep
-columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration']
-
-# CSV files
-input_file = 'inputstm2022.csv'
-#input_file = 'dataset_instagram-hashtag-scraper_2023-01-17_02-48-20-006.csv'
-
-file_path = 'D:\\consulting\\AudreyHelpsActors\\'
-
-output_csv = file_path + 'output.csv'
-
-input_csv = file_path + input_file
-
+# Determine the encoding type of the csv file
 encoding = determine_encoding(input_csv)
+
+# 
+add_campaign_col(input_csv, encoding)
+# List of column names to keep
+columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag']
 
 # Read the input CSV file
 with open(input_csv, 'r', encoding=encoding) as input_file:
@@ -136,8 +133,8 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
             # -------------------------------
             if camp_check:
                 output_row['campaignFlag'] = 'Y'
-            #else:
-            #    output_row['campaignFlag'] = 'N'
+            else:
+                output_row['campaignFlag'] = 'N'
 
             # Convert date/time string to formatted date/time stamp
             if output_row['timestamp'] != '':

@@ -26,10 +26,12 @@ Steps:
 ### GCP
 Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) python script has ran successfully you will need to upload the `output.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
-2) Upload data by using the `Local file` option
+2) Run the the following SQL to clear current data in the table `self-tape-may.self_tape_may_data.tbl-stm-clean-data`
+  `DELETE FROM `self-tape-may.self_tape_may_data.tbl-stm-clean-data` stm WHERE stm.id is not null;`
+3) Upload data by using the `Local file` option
   - There is an `Add Data` button that you need to click
   - This button will give you a prompt and you need to select `Local file`
-3) You will be presented with prompts:
+4) You will be presented with prompts:
   - `Create table from` should have the value of `Upload`
   - `Select file` should have the `output.csv` file
   - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
@@ -43,4 +45,4 @@ Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main
   - All other values should be left to whatever they default to
   - Click `Create Table`
   - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table
-4) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
+5) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.

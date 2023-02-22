@@ -31,10 +31,10 @@ def add_campaign_col(in_file):
     # Add a header for the new column to the first row
     rows[0].append('New Column')
 
-    # Iterate through each row and append the value for the new column
-    for row in rows[1:]:
-        # Replace 'new_value' with the value you want to add to the new column
-        row.append('new_value')
+    ## Iterate through each row and append the value for the new column
+    #for row in rows[1:]:
+        ## Replace 'new_value' with the value you want to add to the new column
+        #row.append('new_value')
 
     # Open the CSV file for writing
     with open('my_csv_file.csv', 'w', newline='') as file:

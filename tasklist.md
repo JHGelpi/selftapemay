@@ -1,4 +1,4 @@
-- [ ] Step 1: Create and document process for scraping #selftapemay2023 hashtag and downloading raw data from apitfy
+- [x] Step 1: Create and document process for scraping #selftapemay2023 hashtag and downloading raw data from apitfy
   - This process will be manual and will be executed daily
   - IF I can automate the process it will need to:
     - Trigger the scraping of data with necessary parameter(s) (hashtag value)
@@ -10,14 +10,14 @@
     - Download the file (manually) to D:\consulting\AudreyHelpsActors\
     - Name the file stm2023scrapeddata[datetimestamp].csv
     - kick off the output file cleanup python script (Step 2)
-- [ ] Step 2: Create a cleaned up output file.  This file will:
+- [x] Step 2: Create a cleaned up output file.  This file will:
   - Extract the columns needed from the data extract created at apify
   - Add the '@' symbol to the `ownerUsername` field
   - Convert the `timestamp` field to an actual datetime
   - Identify the "bonus" hashtag and create a flag to represent when someone has leveraged that hashtag
     - This will require looping through all the hashtag fields in the apify dataset to see if the hashtag exists
   - Export file with the name of output.csv
-- [ ] Step 3: Store the data in GCP or Wix.com data collection
+- [x] Step 3: Store the data in GCP or Wix.com data collection
   - Option #1 (GCP)
     - (Manual)Store all data uploaded from output.csv files.  Data uploaded will be a full replace (not append) to ensure no historical posts were missed.
     - (Automated)Create a view of the data that is derived from the uploaded output.csv file
@@ -38,4 +38,5 @@
     - Data validation on the user profile data has been implemented to ensure instagram handle starts with the '@' symbol and matches the criteria of Instagram's handle policy.  The regex expression for this: `^@(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,28}$`
 - [ ] Step 5: Expose the joined view of data in the form of the leaderboard
 ## Outstanding questions
-- [ ] How do we want to handle people who post more than 16 self tapes?
+- [x] How do we want to handle people who post more than 16 self tapes?
+  - ANSWER: We will show their actual total and will not limit them in any way

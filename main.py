@@ -21,9 +21,12 @@ def determine_encoding(file_path):
     return result['encoding']
 
 # Before the csv file is imported for manipulation 
-# add a column to the file at the end.
+# add a column to the file at the end.  This column
+# is intended to store a Y/N flag for if the user participated
+# in a particular campaign during Self Tape May.  For example:
+# in 2022 the campaign was "Witcher sides".  If the user leveraged 
+# a hashtag mentioning The Witcher they should have a 'Y' in this column
 def add_campaign_col(in_file, encoding):
-    #import csv
 
     # Open the CSV file for reading
     with open(in_file, 'r', encoding=encoding) as file:
@@ -34,11 +37,6 @@ def add_campaign_col(in_file, encoding):
 
     # Add a header for the new column to the first row
     rows[0].append('campaignFlag')
-
-    ## Iterate through each row and append the value for the new column
-    #for row in rows[1:]:
-        ## Replace 'new_value' with the value you want to add to the new column
-        #row.append('new_value')
 
     # Open the CSV file for writing
     with open(in_file, 'w', newline='', encoding=encoding) as file:
@@ -93,8 +91,9 @@ def campaign_check(columns, userName, dataRow):
 # Determine the encoding type of the csv file
 encoding = determine_encoding(input_csv)
 
-# 
+# Add the 'campaignFlag' to the source CSV file
 add_campaign_col(input_csv, encoding)
+
 # List of column names to keep
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag']
 
@@ -107,7 +106,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
         columns_to_write = columns_to_keep
-        #columns_to_write.append('campaignFlag')
 
         writer = csv.DictWriter(output_file, fieldnames=columns_to_write)
 
@@ -118,19 +116,15 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
         for row in reader:
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
-
+            
+            # Call the campaign check function to see if users participated in the campaign
             camp_check = campaign_check(hash_columns, output_row['ownerUsername'], {key: row[key] for key in hash_columns})
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com
             output_row['ownerUsername'] = '@' + output_row['ownerUsername']
 
-            # -------------------------------
-            # OUTSTANDING ITEM
-            # I still need to figure out how to add the boolean flag to an
-            # added column called 'campaignFlag'.  I cannot seem to get this to work
-            # just yet.
-            # -------------------------------
+            # Based on the results returned from campaign_check set the value accordingly
             if camp_check:
                 output_row['campaignFlag'] = 'Y'
             else:
@@ -139,7 +133,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
             # Convert date/time string to formatted date/time stamp
             if output_row['timestamp'] != '':
                 date_string = output_row['timestamp']
-                #date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
                 dt = datetime.strptime(date_string, date_format)
                 output_row['timestamp'] = dt
 

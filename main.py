@@ -5,13 +5,39 @@ import chardet
 from datetime import datetime
 
 # init variables
+# This is the date format for the data downloaded from Apify
+# It is used to convert the text string into a true date value before exporting to CSV
 date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+# This is the start date for the timeframe that you are performing the data
+# clean-up for.  The format is (yyyy,m,d,h,m,s)
+
+# This variable WILL needed to be updated each year
 start_dttm = datetime(2022,5,1,0,0,0,1)
+
+# This is the end date for the timeframe you are performing the data
+# clean-up for.  The format is (yyyy,m,d,h,m,s)
+
+# This variable WILL needed to be updated each year
 end_dttm = datetime(2022,5,31,23,59,59)
+
+# This variable is used to return whether the user used the proper
+# hashtag to qualify/be counted toward the campaign (e.g. in 2022 the campaign
+# was The Witcher)
 camp_elig = False
+
+# This is the file name for the initial input file downloaded from Apify
+# it needs to match exactly the file.
 input_file = 'inputstm2022.csv'
+
+# This is the folder path where the Apify export file resides as well
+# as the location of where the output csv will be
 file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+
+# This is the full path of the output file
 output_csv = file_path + 'output.csv'
+
+# This is the full path of the input file
 input_csv = file_path + input_file
 
 # Determine encoding

@@ -32,7 +32,7 @@ Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main
   - There is an `Add Data` button that you need to click
   - This button will give you a prompt and you need to select `Local file`
 4) You will be presented with prompts:
-  - `Create table from` should have the value of `Upload`
+    - `Create table from` should have the value of `Upload`
   - `Select file` should have the `output.csv` file
   - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
   - `Project` should be `self-tape-may`

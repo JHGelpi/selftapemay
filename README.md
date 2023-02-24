@@ -19,12 +19,12 @@ Steps:
 5) Click `Save`
 6) Click `Start`
 7) After results are returned export the results to **CSV** file format and save to the local drive
-8) File name should match the `input_file` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) file
-9) Folder path should match the `file_path` variable in the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) file
-10) Run the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) python script
+8) File name should match the `input_file` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
+9) Folder path should match the `file_path` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
+10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script
 11) Script will output the needed columns in a file named `output.csv`.  This file needs to be uploaded to GCP BigQuery.
 ### GCP
-Once the [apify-data-cleansing](https://github.com/JHGelpi/selftapemay/blob/main/apify-data-cleansing.py) python script has ran successfully you will need to upload the `output.csv` file into GCP.  To do this:
+Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has ran successfully you will need to upload the `output.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
 2) Run the the following SQL to clear current data in the table `self-tape-may.self_tape_may_data.tbl-stm-clean-data`
   `DELETE FROM 'self-tape-may.self_tape_may_data.tbl-stm-clean-data' stm WHERE stm.id is not null;`

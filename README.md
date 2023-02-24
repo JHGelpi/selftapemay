@@ -27,7 +27,6 @@ Steps:
 Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has ran successfully you will need to upload the `output.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
 2) Run the the [delFrom_tbl-stm-clean-data](https://github.com/JHGelpi/selftapemay/blob/main/delFrom_tbl-stm-clean-data.sql) query to clear current data in the table.
-  `DELETE FROM 'self-tape-may.self_tape_may_data.tbl-stm-clean-data' stm WHERE stm.id is not null;`
 3) Upload data by using the `Local file` option
     - There is an `Add Data` button that you need to click
     - This button will give you a prompt and you need to select `Local file`

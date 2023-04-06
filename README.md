@@ -46,3 +46,18 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
     - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table
 5) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
     - Code for `view-stm-leaderboard` can be found in the file [view-stm-leaderboard.sql](https://github.com/JHGelpi/selftapemay/blob/main/view-stm-leaderboard.sql) in this repo 
+#### GCP data documentation
+- tblSTM2022Data
+    - This has the 2022 data structured with the necessary fields for the Leaderboard
+- tbl-stm-clean-data
+    - This table is used to store the data that is downloaded from Instagram daily and will serve as the source for all new self tapes
+- tblSTMParticipantData
+    - This is the operational data store for user profiles.  This will store the data related to a person (Instagram Handle, Market, Email address, etc.)
+- view-stm-leaderboard
+    - This is a view and is intended to combine `tblSTM2022Data`, `tbl-stm-clean-data`, and `tblSTMParticipantData`
+    - This view does a `JOIN` on instagram accounts to only show data for people from last year if and only if they participated this year
+    - The results of this view should show:
+        - New people who started participating for the first time this year
+        - People who may have participated in the past, but did not participate last year
+        - People who have participated both this year AND last year
+            - In this case the data from last year will be added to their profile (so it'll show what they entered last year in terms of years participating/years achieving 16 self tapes with last year's data incrementing their history)

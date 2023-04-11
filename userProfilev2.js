@@ -6,26 +6,46 @@ import wixUsers from 'wix-users';
 import { currentMember } from 'wix-members'; // Correct
 
 //----saveData function begin----
+/*
+let checkboxValue = $w('#checkboxId').value;
+let isChecked = checkboxValue === "true";
+ */
 function saveData(itemID, email) {
   console.log("saveData current member email: " + email);
   let instagramHandle = $w('#inputInstagram').value;
+  console.log("instagramHandle: " + instagramHandle);
   let market = $w('#dropdownMarket').value;
+  console.log("market: " + market);
   let howManyYrs = parseInt($w('#inputYearsParticipated').value);
+  console.log("howManyYrs: " + howManyYrs);
   let howManySixteen = parseInt($w('#inputYearsCompleted16').value);
-  let participatedBefore = $w('#checkboxParticipatedBefore').checked;
-  let sixteenBefore = $w('#checkboxCompleted16Before').checked;
-  let exclProgressBoard = $w('#checkboxExcludeFromLeaderboard').checked;
+  console.log("howManySixteen: " + howManySixteen);
+  let participatedBefore = $w('#checkboxParticipatedBefore').value;
+  console.log("participatedBefore: " + participatedBefore);
+  let participatedBeforeBool = participatedBefore === "true";
+  console.log("participatedBeforeBool");
+  console.log(participatedBeforeBool)
+  let sixteenBefore = $w('#checkboxCompleted16Before').value;
+  console.log("sixteenBefore: " + sixteenBefore);
+  let sixteenBeforeBool = sixteenBefore === "true";
+  console.log("sixteenBeforeBool");
+  console.log(sixteenBeforeBool);
+  let exclProgressBoard = $w('#checkboxExcludeFromLeaderboard').value;
+  console.log("exclProgressBoard");
+  let exclProgressBoardBool = exclProgressBoard === "true";
+  console.log("exclProgressBoardBool");
+  console.log(exclProgressBoardBool);
 
   let toUpdate = {
     "_id": itemID,
     "email": email,
     "instagram": instagramHandle,
     "market": market,
-    "participatedBefore": participatedBefore,
+    "participatedBefore": participatedBeforeBool,
     "numYearsParticipated": howManyYrs,
-    "recordedSixteen": sixteenBefore,
+    "recordedSixteen": sixteenBeforeBool,
     "numYearsSixteen": howManySixteen,
-    "excludeFromLeaderboard": exclProgressBoard
+    "excludeFromLeaderboard": exclProgressBoardBool
   };
 
   wixData.update("gcpOperationalDB/tblSTMParticipantData", toUpdate)
@@ -40,7 +60,7 @@ function saveData(itemID, email) {
 //----saveData function end----
 
 //----init function begin----
-function init() {
+/*function init() {
   //ERROR: "Error: WDE0116: default undefined, No matching signature for operator = for argument types: STRING, STRUCT<>. Supported signature: ANY = ANY at [1:241]"
   let userEmail = currentMember.getMember()
     .then((member) => {
@@ -70,38 +90,36 @@ function init() {
     .catch((error) => {
       console.log("Error: ", error);
     });
+}*/
+async function init() {
+  try {
+    const member = await currentMember.getMember();
+    const userEmail = member.loginEmail;
+    const res = await wixData.query("gcpOperationalDB/viewSTMParticipantData")
+      .eq("email", userEmail)
+      .find();
+    console.log("res.length: " + res.length);
+    if (res.length === 0) {
+      const toInsert = {
+        "email": userEmail
+      };
+      await wixData.insert("gcpOperationalDB/viewSTMParticipantData", toInsert);
+      $w("#dataViewGCPOperational").refresh();
+      $w("#dataViewGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
+    } else {
+      $w("#dataViewGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
+    }
+  } catch (error) {
+    console.log("Error: ", error);
+  }
 }
+
 //----init function end----
 
 $w.onReady(function () {
   console.log("Calling init() function...")
   init()
   console.log("Done with init() function...")
-  //$w("#dataGCPOperational").refresh()
-  /*currentMember.getMember()
-    .then((member) => {
-      const userEmail = member.loginEmail;
-      console.log("currentMember.getMember() userEmail: " + userEmail);
-      return userEmail;
-    })
-    .then((userEmail) => {
-      console.log("userEmail before init function: " + userEmail)
-      //return init(userEmail)
-      init(userEmail)
-      $w("#dataGCPOperational").refresh()
-    })
-    .then((userEmail) => {
-      //$w("#dataGCPOperational").refresh()
-        //.then((userEmail) => {
-          console.log("userEmail after .refresh(): " + userEmail)
-          $w("#dataGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
-          let profItem = $w("#dataGCPOperational").getCurrentItem();
-          console.log("profItem " + profItem);
-        //});
-    })
-    .catch((error) => {
-      console.log("Error: ", error);
-    });*/
 });
 
 /**
@@ -113,12 +131,7 @@ $w.onReady(function () {
 export function inputInstagram_change(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
-  /*console.log("inputInstagram_change function called");
-  //let item = $w('#dataGCPOperational').getCurrentItem();
-  let item = $w('#dataLocalSelfTapeMayParticipantData').getCurrentItem();
-  
-  console.log("current item:", item);
-  saveData(item._id, item.email);*/
+
 }
 
 /**
@@ -130,12 +143,7 @@ export function inputInstagram_change(event) {
 export function dropdownMarket_change(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here:
-  /*console.log("inputInstagram_change function called");
-  //let item = $w('#dataGCPOperational').getCurrentItem();
-  let item = $w('#dataLocalSelfTapeMayParticipantData').getCurrentItem();
-  
-  console.log("current item:", item);
-  saveData(item._id, item.email); */
+
 }
 
 /**
@@ -146,17 +154,11 @@ export function dropdownMarket_change(event) {
 export function buttonSave_click(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
-  let item = $w('#dataGCPOperational').getCurrentItem()
-  /*let userEmail = currentMember.getMember()
-    .then((member) => {
-      const userEmail = member.loginEmail;
-      return userEmail;
-    })*/
-  .then(() => {
-    console.log("Calling saveData() function with the following variables:")
-    console.log("item._id " + item._id)
-    console.log("item.email " + item.email)
-    console.log("--------------")
-    saveData(item._id, item.email); 
-  })
+
+  let item = $w('#dataViewGCPOperational').getCurrentItem()
+  console.log("Calling saveData() function with the following variables:")
+  console.log("item._id " + item._id)
+  console.log("item.email " + item.email)
+  console.log("--------------")
+  saveData(item._id, item.email);
 }

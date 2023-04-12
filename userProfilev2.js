@@ -36,8 +36,7 @@ function saveData(itemID, email) {
   console.log("exclProgressBoardBool");
   console.log(exclProgressBoardBool);
 
-  let toUpdate = {
-    "_id": itemID,
+  const toInsert = {
     "email": email,
     "instagram": instagramHandle,
     "market": market,
@@ -46,9 +45,10 @@ function saveData(itemID, email) {
     "recordedSixteen": sixteenBeforeBool,
     "numYearsSixteen": howManySixteen,
     "excludeFromLeaderboard": exclProgressBoardBool
-  };
+      };
+  wixData.insert("gcpOperationalDB/tblSTMParticipantData", toInsert)
 
-  wixData.update("gcpOperationalDB/tblSTMParticipantData", toUpdate)
+  //wixData.update("gcpOperationalDB/tblSTMParticipantData", toUpdate)
     .then((results) => {
       console.log(results); //see item below
     })
@@ -60,37 +60,6 @@ function saveData(itemID, email) {
 //----saveData function end----
 
 //----init function begin----
-/*function init() {
-  //ERROR: "Error: WDE0116: default undefined, No matching signature for operator = for argument types: STRING, STRUCT<>. Supported signature: ANY = ANY at [1:241]"
-  let userEmail = currentMember.getMember()
-    .then((member) => {
-      const userEmail = member.loginEmail;
-      //console.log("currentMember.getMember() userEmail: " + userEmail);
-      return userEmail;
-    })
-    //console.log("userEmail before .query(gcpOperationalDB/tblSTMParticipantData) " + userEmail)
-    wixData.query("gcpOperationalDB/tblSTMParticipantData")
-    .eq("email", userEmail)
-    .find()
-    .then((res) => { 
-      console.log("res.length: " + res.length);
-      if(res.length === 0) {
-        const toInsert = {
-          "email": userEmail
-        };
-        wixData.insert("gcpOperationalDB/tblSTMParticipantData", toInsert)
-        .then(() => {
-          $w("#dataGCPOperational").refresh()
-          $w("#dataGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
-        })
-      } else {
-        $w("#dataGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
-      }
-    })
-    .catch((error) => {
-      console.log("Error: ", error);
-    });
-}*/
 async function init() {
   try {
     const member = await currentMember.getMember();
@@ -103,7 +72,7 @@ async function init() {
       const toInsert = {
         "email": userEmail
       };
-      await wixData.insert("gcpOperationalDB/viewSTMParticipantData", toInsert);
+      await wixData.insert("gcpOperationalDB/tblSTMParticipantData", toInsert);
       $w("#dataViewGCPOperational").refresh();
       $w("#dataViewGCPOperational").setFilter(wixData.filter().eq("email", userEmail));
     } else {

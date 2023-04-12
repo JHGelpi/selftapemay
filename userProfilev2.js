@@ -6,10 +6,6 @@ import wixUsers from 'wix-users';
 import { currentMember } from 'wix-members'; // Correct
 
 //----saveData function begin----
-/*
-let checkboxValue = $w('#checkboxId').value;
-let isChecked = checkboxValue === "true";
- */
 function saveData(itemID, email) {
   console.log("saveData current member email: " + email);
   let instagramHandle = $w('#inputInstagram').value;

@@ -29,7 +29,7 @@ camp_elig = False
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
 # input_file = 'inputstm2022.csv'
-input_file = 'dataset_instagram-hashtag-scraper_2023-04-17_14-25-13-509.csv'
+input_file = 'dataset_instagram-hashtag-scraper_2023-04-17_14-26-18-399.csv'
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
@@ -83,7 +83,7 @@ def add_campaign_col(in_file, encoding):
 def hashtag_columns(csv_reader):
     header_row = next(csv_reader)
     all_cols = []
-    search_string = "selftapemay2023"
+    search_string = "hashtag"
     hashtag_cols = ['ownerUsername']
 
     # Identify all the headers
@@ -126,10 +126,11 @@ add_campaign_col(input_csv, encoding)
 
 # List of column names to keep
 columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag']
-
+print("---BEGIN---")
 # Read the input CSV file
 with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
+    #header = next(reader)  # read the first row as header
 
     hash_columns = hashtag_columns(reader)
 
@@ -144,9 +145,10 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
         # Write the data rows, keeping only the specified columns
         for row in reader:
+            print(row['ownerUsername'])
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
-            
+
             # Call the campaign check function to see if users participated in the campaign
             camp_check = campaign_check(hash_columns, output_row['ownerUsername'], {key: row[key] for key in hash_columns})
 

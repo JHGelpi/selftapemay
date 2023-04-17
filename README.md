@@ -49,7 +49,7 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
 #### GCP data documentation
 - tblSTM2022Data
     - This has the 2022 data structured with the necessary fields for the Leaderboard
-- tbl-stm-clean-data
+- tblInstagramData
     - This table is used to store the data that is downloaded from Instagram daily and will serve as the source for all new self tapes
 - tblSTMParticipantData
     - This is the operational data store for user profiles.  This will store the data related to a person (Instagram Handle, Market, Email address, etc.)

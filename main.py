@@ -142,10 +142,25 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
         # Write the header row
         writer.writeheader()
+        # ******************************************
+        # DEBUGGING THE READER DICTIONARY
+        # ******************************************
+        # Iterate over the dictionary and print each key-value pair
+        # for row in reader:
+        #     for key, value in row.items():
+        #         print(key, ':', value)
+        #     print() # Add an extra line between rows
 
+        # ******************************************
+        # END DEBUGGING CODE
+        # ******************************************
         # Write the data rows, keeping only the specified columns
-        for row in reader:
-            print(row['ownerUsername'])
+        for i, row in enumerate(reader):
+            #print("i: ")
+            #print(i)
+            #print("---row---")
+            #print(row)
+            #print("row userName: " + row['ownerUsername'])
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
 

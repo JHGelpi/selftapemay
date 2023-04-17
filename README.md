@@ -61,3 +61,5 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
         - People who may have participated in the past, but did not participate last year
         - People who have participated both this year AND last year
             - In this case the data from last year will be added to their profile (so it'll show what they entered last year in terms of years participating/years achieving 16 self tapes with last year's data incrementing their history)
+- viewSTMParticipantData
+    - This stores the current row of data for participant data.  The Self Tape May Profile data is **APPENDED** to tblSTMParticipantData and thus this view pulls in the current record will all of the most recent data for that participant.

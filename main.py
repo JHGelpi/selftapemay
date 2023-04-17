@@ -7,7 +7,8 @@ from datetime import datetime
 # init variables
 # This is the date format for the data downloaded from Apify
 # It is used to convert the text string into a true date value before exporting to CSV
-date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+#date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+date_format = '%Y-%m-%d %H:%M:%S'
 
 # This is the start date for the timeframe that you are performing the data
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
@@ -66,6 +67,10 @@ def add_campaign_col(in_file, encoding):
     # Add a header for the new column to the first row
     rows[0].append('campaignFlag')
     rows[0].append('locationName')
+    rows[0].append('_id')
+    rows[0].append('_createdDate')
+    rows[0].append('_updatedDate')
+    rows[0].append('_owner')
 
     # Open the CSV file for writing
     with open(in_file, 'w', newline='', encoding=encoding) as file:
@@ -125,8 +130,8 @@ encoding = determine_encoding(input_csv)
 add_campaign_col(input_csv, encoding)
 
 # List of column names to keep
-columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag']
-print("---BEGIN---")
+columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']
+# print("---BEGIN---")
 # Read the input CSV file
 with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
@@ -169,7 +174,10 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com
+            output_row['id'] = str(output_row['id'])
             output_row['ownerUsername'] = '@' + output_row['ownerUsername']
+            output_row['_id'] = output_row['id']
+            output_row['_owner'] = output_row['ownerUsername']
 
             # Based on the results returned from campaign_check set the value accordingly
             if camp_check:
@@ -179,10 +187,30 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
             # Convert date/time string to formatted date/time stamp
             if output_row['timestamp'] != '':
-                date_string = output_row['timestamp']
-                dt = datetime.strptime(date_string, date_format)
-                output_row['timestamp'] = dt
+
+                # *****************************
+                # BEGIN TIMESTAMP CONVERSION
+                # *****************************
+                timestamp_str = output_row['timestamp']
+
+                # Parse the string into a datetime object
+                timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+                print(timestamp_dt)
+                # Convert the datetime object to the desired format
+                bigquery_timestamp_str = timestamp_dt.strftime('%Y-%m-%d %H:%M:%S.%f UTC')
+
+                #print(bigquery_timestamp_str) # Output: 2023-02-07 17:13:20.000000 UTC
+
+                # *****************************
+                # END TIMESTAMP CONVERSION
+                # *****************************
+
+                #date_string = output_row['timestamp']
+                #dt = datetime.strptime(date_string, date_format)
+                output_row['timestamp'] = timestamp_dt
+                output_row['_createdDate'] = timestamp_dt
+                output_row['_updatedDate'] = timestamp_dt
 
             # Write out data to CSV file
-            if start_dttm <= dt <= end_dttm and output_row['type'] == 'Video':
+            if start_dttm <= timestamp_dt <= end_dttm and output_row['type'] == 'Video':
                 writer.writerow(output_row)

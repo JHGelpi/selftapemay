@@ -13,13 +13,13 @@ date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
 
 # This variable WILL needed to be updated each year
-start_dttm = datetime(2022,5,1,0,0,0,1)
+start_dttm = datetime(2023,1,1,0,0,0,1)
 
 # This is the end date for the timeframe you are performing the data
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
 
 # This variable WILL needed to be updated each year
-end_dttm = datetime(2022,5,31,23,59,59)
+end_dttm = datetime(2023,5,31,23,59,59)
 
 # This variable is used to return whether the user used the proper
 # hashtag to qualify/be counted toward the campaign (e.g. in 2022 the campaign
@@ -28,11 +28,13 @@ camp_elig = False
 
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
-input_file = 'inputstm2022.csv'
+# input_file = 'inputstm2022.csv'
+input_file = 'dataset_instagram-hashtag-scraper_2023-04-17_14-25-13-509.csv'
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
-file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+# file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+file_path = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
 
 # This is the full path of the output file
 output_csv = file_path + 'output.csv'
@@ -63,6 +65,7 @@ def add_campaign_col(in_file, encoding):
 
     # Add a header for the new column to the first row
     rows[0].append('campaignFlag')
+    rows[0].append('locationName')
 
     # Open the CSV file for writing
     with open(in_file, 'w', newline='', encoding=encoding) as file:
@@ -80,7 +83,7 @@ def add_campaign_col(in_file, encoding):
 def hashtag_columns(csv_reader):
     header_row = next(csv_reader)
     all_cols = []
-    search_string = "hashtag"
+    search_string = "selftapemay2023"
     hashtag_cols = ['ownerUsername']
 
     # Identify all the headers
@@ -102,7 +105,8 @@ def campaign_check(columns, userName, dataRow):
     # This variable identifies the campaign hashtag.
     # Current assumption is there will only be one campaign hashtag
     # at a time.
-    camp_hashtag = "audreyhelpsactors"
+    #camp_hashtag = "selftapemaylotr"
+    camp_hashtag = "selftapemay2023"
 
     # Loop through all of the items in this dictionary
     # and check to see if the user leveraged the campaign hashtag

@@ -54,7 +54,7 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
 - tblSTMParticipantData
     - This is the operational data store for user profiles.  This will store the data related to a person (Instagram Handle, Market, Email address, etc.)
 - view-stm-leaderboard
-    - This is a view and is intended to combine `tblSTM2022Data`, `tbl-stm-clean-data`, and `tblSTMParticipantData`
+    - This is a view and is intended to combine `tblSTM2022Data`, `tblInstagramData`, and `tblSTMParticipantData`
     - This view does a `JOIN` on instagram accounts to only show data for people from last year if and only if they participated this year
     - The results of this view should show:
         - New people who started participating for the first time this year

@@ -43,8 +43,8 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
       - `Write preference` should be `Append to table`
     - All other values should be left to whatever they default to
     - Click `Create Table`
-    - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table
-5) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
+    - Data should be uploaded and **Appended** to the existing `tblInstagramData` table
+5) Once the data has been uploaded into `tblInstagramData` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
     - Code for `view-stm-leaderboard` can be found in the file [view-stm-leaderboard.sql](https://github.com/JHGelpi/selftapemay/blob/main/view-stm-leaderboard.sql) in this repo 
 #### GCP data documentation
 - tblSTM2022Data

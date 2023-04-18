@@ -36,7 +36,7 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
     - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
     - `Project` should be `self-tape-may`
     - `Dataset` should be `self_tape_may_data`
-    - `Table` should be `tbl-stm-clean-data`
+    - `Table` should be `tblInstagramData`
     - `Table type` should be `Native table`
     - `Schema` should be `Source file defines the schema`
     - Under `Advanced options`

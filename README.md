@@ -36,25 +36,25 @@ Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) pyt
     - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
     - `Project` should be `self-tape-may`
     - `Dataset` should be `self_tape_may_data`
-    - `Table` should be `tbl-stm-clean-data`
+    - `Table` should be `tblInstagramData`
     - `Table type` should be `Native table`
     - `Schema` should be `Source file defines the schema`
     - Under `Advanced options`
       - `Write preference` should be `Append to table`
     - All other values should be left to whatever they default to
     - Click `Create Table`
-    - Data should be uploaded and **Appended** to the existing `tbl-stm-clean-data` table
-5) Once the data has been uploaded into `tbl-stm-clean-data` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
+    - Data should be uploaded and **Appended** to the existing `tblInstagramData` table
+5) Once the data has been uploaded into `tblInstagramData` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
     - Code for `view-stm-leaderboard` can be found in the file [view-stm-leaderboard.sql](https://github.com/JHGelpi/selftapemay/blob/main/view-stm-leaderboard.sql) in this repo 
 #### GCP data documentation
 - tblSTM2022Data
     - This has the 2022 data structured with the necessary fields for the Leaderboard
-- tbl-stm-clean-data
+- tblInstagramData
     - This table is used to store the data that is downloaded from Instagram daily and will serve as the source for all new self tapes
 - tblSTMParticipantData
     - This is the operational data store for user profiles.  This will store the data related to a person (Instagram Handle, Market, Email address, etc.)
 - view-stm-leaderboard
-    - This is a view and is intended to combine `tblSTM2022Data`, `tbl-stm-clean-data`, and `tblSTMParticipantData`
+    - This is a view and is intended to combine `tblSTM2022Data`, `tblInstagramData`, and `tblSTMParticipantData`
     - This view does a `JOIN` on instagram accounts to only show data for people from last year if and only if they participated this year
     - The results of this view should show:
         - New people who started participating for the first time this year

@@ -30,7 +30,7 @@ camp_elig = False
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
 # input_file = 'inputstm2022.csv'
-input_file = 'dataset_instagram-hashtag-scraper_2023-04-17_14-26-18-399.csv'
+input_file = 'dataset_instagram-scraper_2023-04-19_01-21-22-732.csv'
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
@@ -66,7 +66,7 @@ def add_campaign_col(in_file, encoding):
 
     # Add a header for the new column to the first row
     rows[0].append('campaignFlag')
-    rows[0].append('locationName')
+    #rows[0].append('locationName')
     rows[0].append('_id')
     rows[0].append('_createdDate')
     rows[0].append('_updatedDate')
@@ -110,8 +110,7 @@ def campaign_check(columns, userName, dataRow):
     # This variable identifies the campaign hashtag.
     # Current assumption is there will only be one campaign hashtag
     # at a time.
-    #camp_hashtag = "selftapemaylotr"
-    camp_hashtag = "selftapemay2023"
+    camp_hashtag = "selftapemaylotr"
 
     # Loop through all of the items in this dictionary
     # and check to see if the user leveraged the campaign hashtag
@@ -195,7 +194,7 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
                 # Parse the string into a datetime object
                 timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%fZ')
-                print(timestamp_dt)
+                #print(timestamp_dt)
                 # Convert the datetime object to the desired format
                 bigquery_timestamp_str = timestamp_dt.strftime('%Y-%m-%d %H:%M:%S.%f UTC')
 
@@ -212,5 +211,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
                 output_row['_updatedDate'] = timestamp_dt
 
             # Write out data to CSV file
+            print(output_row['ownerUsername'])
             if start_dttm <= timestamp_dt <= end_dttm and output_row['type'] == 'Video':
                 writer.writerow(output_row)

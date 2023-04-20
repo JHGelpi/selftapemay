@@ -14,12 +14,22 @@ Steps:
 1) Navigate to the 'Actors' section within Apify
 2) Select `Instagram Hashtag Scraper` published by zuzka (zuzka/instagram-hashtag-scraper)
 3) Add the necessary Instagram hashtags to scrape
-    - The value should be `selftapemaye2023`
+    - The value should be `selftapemaye`
 4) Modify the `Number of posts per hashtag` value to cover all possible hashtags.
     - I will default this to 5000
 5) Click `Save`
 6) Click `Start`
 7) After results are returned export the results to **CSV** file format and save to the local drive
+    - Only the following columns need to be exported:
+        - hashtags
+        - type
+        - ownerFullName
+        - ownerUsername
+        - timestamp
+        - username
+        - id
+        - shortCode
+        - url
 8) File name should match the `input_file` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
 9) Folder path should match the `file_path` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
 10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script

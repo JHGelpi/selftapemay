@@ -38,7 +38,7 @@ input_file = 'dataset_instagram-scraper_2023-04-19_01-21-22-732.csv'
 file_path = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
 
 # This is the full path of the output file
-output_csv = file_path + 'output.csv'
+output_csv = file_path + 'videoOutput.csv'
 
 # This is the full path of the input file
 input_csv = file_path + input_file
@@ -129,7 +129,13 @@ encoding = determine_encoding(input_csv)
 add_campaign_col(input_csv, encoding)
 
 # List of column names to keep
-columns_to_keep = ['id','locationName','ownerFullName','ownerUsername','timestamp', 'type', 'videoDuration', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']
+columns_to_keep = ['id','ownerFullName','ownerUsername','timestamp', 'type', 'campaignFlag', 'url','_id', '_createdDate', '_updatedDate', '_owner']
+#columns_to_keep['productType'] = columns_to_keep.pop('type')
+
+#index = columns_to_keep.index('type')
+
+#columns_to_keep[index] = 'productType'
+
 # print("---BEGIN---")
 # Read the input CSV file
 with open(input_csv, 'r', encoding=encoding) as input_file:
@@ -211,6 +217,6 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
                 output_row['_updatedDate'] = timestamp_dt
 
             # Write out data to CSV file
-            print(output_row['ownerUsername'])
+
             if start_dttm <= timestamp_dt <= end_dttm and output_row['type'] == 'Video':
                 writer.writerow(output_row)

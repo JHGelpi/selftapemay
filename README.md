@@ -9,14 +9,14 @@ This will outline how data is acquired for the leaderboard on selftapemay.com
 
 ### Apify
 #### To capture Videos > 15 minutes
-The first step is to leverage the existing Apify Instagram web scraper.  This is done by using the Instagram Hashtag Scraper actor https://console.apify.com/actors/reGe1ST3OBgYZSsZJ.
+The first step is to leverage the existing Apify `apify/instagram-scraper` web scraper.  This is done by using the Instagram Hashtag Scraper actor https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/console.
 Steps:
 1) Navigate to the 'Actors' section within Apify
-2) Select `Instagram Hashtag Scraper` published by zuzka (zuzka/instagram-hashtag-scraper)
+2) Select `Instagram Scraper`
 3) Add the necessary Instagram hashtags to scrape
-    - The value should be `selftapemaye`
-4) Modify the `Number of posts per hashtag` value to cover all possible hashtags.
-    - I will default this to 5000
+    - The value should be `selftapemay`
+4) Modify the `Timeframe` value to cover the proper timeframe.
+    - I will default this to 5/1/2023
 5) Click `Save`
 6) Click `Start`
 7) After results are returned export the results to **CSV** file format and save to the local drive

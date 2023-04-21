@@ -33,7 +33,7 @@ Steps:
 8) File name should match the `input_file` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
 9) Folder path should match the `file_path` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
 10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script
-11) Script will output the needed columns in a file named `videoOutput.csv`.  This file needs to be uploaded to GCP BigQuery.
+11) Script will output the needed columns in a file named `videoOutput.csv`.  ~~This file needs to be uploaded to GCP BigQuery.~~
 
 #### To capture Videos < 15 minutes (Reels)
 The first step is to leverage the existing Apify Instagram web scraper.  This is done by using the Instagram Reel Scraper actor https://console.apify.com/actors/xMc5Ga1oCONPmWJIa/console.
@@ -56,7 +56,10 @@ The first step is to leverage the existing Apify Instagram web scraper.  This is
 7) File name should match the `input_file` variable in the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) file
 8) Folder path should match the `file_path` variable in the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) file
 9) Run the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) python script
-10) Script will output the needed columns in a file named `reelsOutput.csv`.  This file needs to be *combined* with the videoOutput.csv file (Append these results to the videoOutput.csv file) and uploaded to GCP BigQuery.
+10) Script will output the needed columns in a file named `reelsOutput.csv`.  ~~This file needs to be *combined* with the videoOutput.csv file (Append these results to the videoOutput.csv file) and uploaded to GCP BigQuery.~~
+
+#### Upload
+- Depending on how data scraping goes the reelsOutput.csv and/or the videoOutput.csv need to be uploaded.  If you need to upload both then the files need to be manually combined into a single file.  The queries in GCP are designed with the `reelsOutput.csv` header/data structure so stick with that and simply append the `videosOutput.csv` to the `reelsOutput.csv` file.
 
 ### GCP
 Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) and [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) python scripts have ran successfully you will need to upload the `videoOutput.csv` file into GCP.  To do this:

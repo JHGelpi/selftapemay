@@ -14,7 +14,7 @@ date_format = '%Y-%m-%d %H:%M:%S'
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
 
 # This variable WILL needed to be updated each year
-start_dttm = datetime(2023,1,1,0,0,0,1)
+start_dttm = datetime(2022,1,1,0,0,0,1)
 
 # This is the end date for the timeframe you are performing the data
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
@@ -30,7 +30,7 @@ camp_elig = False
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
 # input_file = 'inputstm2022.csv'
-input_file = 'dataset_instagram-scraper_2023-04-19_01-21-22-732.csv'
+input_file = 'jsonOutput.csv'
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
@@ -88,9 +88,30 @@ def add_campaign_col(in_file, encoding):
 def hashtag_columns(csv_reader):
     header_row = next(csv_reader)
     all_cols = []
-    search_string = "hashtag"
+    search_string = "hashtags"
     hashtag_cols = ['ownerUsername']
+    output_rows = []
+    # Create a list to store the rows of the output CSV file
+    output_rows = []
 
+    # Iterate over each row in the input CSV file
+    for row in csv_reader:
+        # Split the hashtags column into a list of hashtags
+        hashtags = row['hashtags'].split(', ')
+
+        # Iterate over each hashtag in the list
+        for i, hashtag in enumerate(hashtags):
+            # Create a new column for the hashtag
+            column_name = f'hashtag/{i}'
+            row[column_name] = hashtag
+
+        # Add the modified row to the list of output rows
+        output_rows.append(row)
+    
+    # return hashtag_cols
+    return output_rows
+
+'''
     # Identify all the headers
     for header in header_row:
         all_cols.append(header)
@@ -100,8 +121,8 @@ def hashtag_columns(csv_reader):
     for header in all_cols:
         if search_string in header:
             hashtag_cols.append(header)
-
-    return hashtag_cols
+'''
+    
 
 # Loop through every column that has the `hashtag` in its name
 # and see if the campaign hashtag(s) were mentioned
@@ -143,7 +164,7 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
     #header = next(reader)  # read the first row as header
 
     hash_columns = hashtag_columns(reader)
-
+    print(hash_columns)
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
         columns_to_write = columns_to_keep

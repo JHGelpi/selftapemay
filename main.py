@@ -1,6 +1,6 @@
 # Data cleansing for apify data import
 # Code writing assisted by ChatGPT :-)
-
+import datetime
 import subprocess
 
 pythonFile = ''
@@ -12,16 +12,22 @@ Initial file needs to be named 'dataset_instagram-api-scraper.json' and located 
 3) jsonOuputToCSV.py'''
 
 pythonFile = 'instagramJSONParser.py'
-print("Executing " + pythonFile + "...")
+now = datetime.datetime.now()
+print(now, ": Executing ", pythonFile, "...")
 subprocess.run(['python', folderLocation + pythonFile])
-print(pythonFile + "Completed!")
+now = datetime.datetime.now()
+print(now, ": ", pythonFile, "Completed!")
 
 pythonFile = 'hashtagParser.py'
-print("Executing " + pythonFile + "...")
+now = datetime.datetime.now()
+print(now, ": Executing ", pythonFile, "...")
 subprocess.run(['python', folderLocation + pythonFile])
-print(pythonFile + "Completed!")
+now = datetime.datetime.now()
+print(now, ": ", pythonFile, "Completed!")
 
 pythonFile = 'jsonOuputToCSV.py'
-print("Executing " + pythonFile + "...")
+now = datetime.datetime.now()
+print(now, ": Executing ", pythonFile, "...")
 subprocess.run(['python', folderLocation + pythonFile])
-print(pythonFile + "Completed!")
+now = datetime.datetime.now()
+print(now, ": ", pythonFile, "Completed!")

@@ -38,10 +38,13 @@ with open(file_path + input_file, newline='', encoding=encoding) as csvfile:
             hashtags = row[5].strip('[]').split(', ')
             
             for tag in hashtags:
-                if tag.strip("'") == selfTape and row[3] == 'Video':
+                cleanHashtag = tag.strip("'")
+                cleanHashtag = cleanHashtag.lower()
+                #print(cleanHashtag)
+                if cleanHashtag == selfTape and row[3] == 'Video':
                     lst = [s.strip(" '") for hashtag in hashtags for s in hashtag.strip("[]").split(",")]
                     for i in range(len(lst)):
-                        if lst[i] == selfTape or lst[i] == selfTapeCampaign:
+                        if lst[i].lower() == selfTape or lst[i].lower() == selfTapeCampaign:
                             selfTapeHashtag = lst[i]
                             row.append(selfTapeHashtag)
                     

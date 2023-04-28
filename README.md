@@ -8,7 +8,7 @@ This project is focused on scraping hashtag data from Instagram and summarizing 
 This will outline how data is acquired for the leaderboard on selftapemay.com
 
 ### Apify
-#### To capture Videos > 15 minutes
+#### To capture Videos
 The first step is to leverage the existing Apify `apify/instagram-api-scraper` web scraper.  This is done by using the Instagram API Scraper actor https://console.apify.com/actors/RB9HEZitC8hIUXAha/console.
 Steps:
 1) Navigate to the 'Actors' section within Apify

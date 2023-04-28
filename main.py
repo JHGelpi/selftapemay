@@ -4,20 +4,23 @@
 import subprocess
 
 pythonFile = ''
-folderLocation = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
+folderLocation = 'D:\\github_projects\\selftapemay\\'
 '''Order:
 1) instagramJSONParser.py
 2) hashtagParser.py
-3) jsonOutputToCSV.py'''
+3) jsonOuputToCSV.py'''
 
 pythonFile = 'instagramJSONParser.py'
-print("Executing instagramJSONParser.py to import raw JSON from apify actor.")
+print("Executing " + pythonFile + "...")
 subprocess.run(['python', folderLocation + pythonFile])
+print(pythonFile + "Completed!")
 
 pythonFile = 'hashtagParser.py'
-print("Executing the process to take the initial CSV and clean/shape the data.")
+print("Executing " + pythonFile + "...")
 subprocess.run(['python', folderLocation + pythonFile])
+print(pythonFile + "Completed!")
 
-pythonFile = 'jsonOutputToCSV.py'
-print("Executing the final process to prepare the data for GCP upload.")
+pythonFile = 'jsonOuputToCSV.py'
+print("Executing " + pythonFile + "...")
 subprocess.run(['python', folderLocation + pythonFile])
+print(pythonFile + "Completed!")

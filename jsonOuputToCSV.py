@@ -150,13 +150,20 @@ def campaign_check(dataRow):
     # Current assumption is there will only be one campaign hashtag
     # at a time.
     camp_hashtag = "selftapemaylotr"
+    hashtag = ''
 
     # Loop through all of the items in this dictionary
     # and check to see if the user leveraged the campaign hashtag
     # If they did use it than the function should return a 'True' value.  Otherwise
     # the function should return a 'False' value.
     for key, value in dataRow.items():
-        if value == camp_hashtag:
+        if value is not None:
+            if key == 'hashtag/0' or key == 'hashtag/1':
+                hashtag = value
+                hashtag = hashtag.lower()
+
+            #print(hashtag)
+        if hashtag == camp_hashtag:
             return True
 
     return False

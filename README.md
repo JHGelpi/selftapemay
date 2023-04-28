@@ -25,7 +25,7 @@ Steps:
 10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script
 11) Script will output the needed columns in a file named `videoOutput.csv`.
 
-### GCP
+### [GCP](https://console.cloud.google.com/bigquery?project=self-tape-may)
 Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has completed successfully you will need to upload the `videoOutput.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
 2) Upload data by using the `Local file` option

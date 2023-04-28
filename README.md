@@ -9,79 +9,41 @@ This will outline how data is acquired for the leaderboard on selftapemay.com
 
 ### Apify
 #### To capture Videos > 15 minutes
-The first step is to leverage the existing Apify `apify/instagram-scraper` web scraper.  This is done by using the Instagram Hashtag Scraper actor https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/console.
+The first step is to leverage the existing Apify `apify/instagram-api-scraper` web scraper.  This is done by using the Instagram API Scraper actor https://console.apify.com/actors/RB9HEZitC8hIUXAha/console.
 Steps:
 1) Navigate to the 'Actors' section within Apify
-2) Select `Instagram Scraper`
-3) Add the necessary Instagram hashtags to scrape
-    - The value should be `selftapemay`
-4) Modify the `Timeframe` value to cover the proper timeframe.
+2) Select `Instagram API Scraper`
+3) Open up Google BigQuery and run the query titled `selectInstagramHandles`
+4) Export query results and copy/paste the `instagramURL` column into the `Add Instagram URLs you want to scrape (optional)` field in the Apify actor by clicking on `Bulk edit`
+4) Modify the `Timeframe Newer than` value to cover the proper timeframe.
     - I will default this to 5/1/2023
 5) Click `Save`
 6) Click `Start`
-7) After results are returned export the results to **CSV** file format and save to the local drive
-    - Only the following columns need to be exported:
-        - hashtags
-        - type
-        - ownerFullName
-        - ownerUsername
-        - timestamp
-        - username
-        - id
-        - shortCode
-        - url
-8) File name should match the `input_file` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
-9) Folder path should match the `file_path` variable in the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) file
+7) After results are returned export the results to **JSON** file format and save to the local drive
+8) File name should be `dataset_instagram-api-scraper.json` otherwise it won't get picked up
+9) Folder path should match the `file_path` variables within the python scripts listed in [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py)
 10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script
-11) Script will output the needed columns in a file named `videoOutput.csv`.  ~~This file needs to be uploaded to GCP BigQuery.~~
-
-#### To capture Videos < 15 minutes (Reels)
-The first step is to leverage the existing Apify Instagram web scraper.  This is done by using the Instagram Reel Scraper actor https://console.apify.com/actors/xMc5Ga1oCONPmWJIa/console.
-1) Navigate to the 'Actors' section within Apify
-2) Select `apify/instagram-reel-scraper`
-3) Click on `Bulk Edit` and Copy/Paste all Instagram handles you wish to scrape for Reels
-4) Select the number of Reels you want to pull for each user.  I recommend defaulting to 50.
-5) Click Start and Save
-6) After results are returned export the results to **CSV** file format and save to the local drive
-    - Only the following columns need to be exported:
-        - hashtags
-        - productType
-        - ownerFullName
-        - ownerUsername
-        - timestamp
-        - username
-        - id
-        - shortCode
-        - url
-7) File name should match the `input_file` variable in the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) file
-8) Folder path should match the `file_path` variable in the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) file
-9) Run the [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) python script
-10) Script will output the needed columns in a file named `reelsOutput.csv`.  ~~This file needs to be *combined* with the videoOutput.csv file (Append these results to the videoOutput.csv file) and uploaded to GCP BigQuery.~~
-
-#### Upload
-- Depending on how data scraping goes the reelsOutput.csv and/or the videoOutput.csv need to be uploaded.  If you need to upload both then the files need to be manually combined into a single file.  The queries in GCP are designed with the `reelsOutput.csv` header/data structure so stick with that and simply append the `videosOutput.csv` to the `reelsOutput.csv` file.
+11) Script will output the needed columns in a file named `videoOutput.csv`.
 
 ### GCP
-Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) and [igReels.py](https://github.com/JHGelpi/selftapemay/blob/main/igReels.py) python scripts have ran successfully you will need to upload the `videoOutput.csv` file into GCP.  To do this:
+Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has completed successfully you will need to upload the `videoOutput.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
-~~2) Run the the [delFrom_tbl-stm-clean-data](https://github.com/JHGelpi/selftapemay/blob/main/delFrom_tbl-stm-clean-data.sql) query to clear current data in the table.~~
-3) Upload data by using the `Local file` option
+2) Upload data by using the `Local file` option
     - There is an `Add Data` button that you need to click
     - This button will give you a prompt and you need to select `Local file`
 4) You will be presented with prompts:
     - `Create table from` should have the value of `Upload`
-    - `Select file` should have the `output.csv` file
+    - `Select file` should have the `videoOutput.csv` file
     - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
     - `Project` should be `self-tape-may`
     - `Dataset` should be `self_tape_may_data`
     - `Table` should be `tblInstagramData`
     - `Table type` should be `Native table`
-    - `Schema` should be `Source file defines the schema`
+    - `Schema` should have `Auto detect` **checked**
     - Under `Advanced options`
       - `Write preference` should be `Overwrite Table`
     - All other values should be left to whatever they default to
     - Click `Create Table`
-    ~~- Data should be uploaded and **Appended** to the existing `tblInstagramData` table~~
 5) Once the data has been uploaded into `tblInstagramData` the data is available at selftapemay.com.  This is because there is a live view `view-stm-leaderboard` that presents the data to selftapemay.com.
     - Code for `view-stm-leaderboard` can be found in the file [view-stm-leaderboard.sql](https://github.com/JHGelpi/selftapemay/blob/main/view-stm-leaderboard.sql) in this repo 
 #### GCP data documentation

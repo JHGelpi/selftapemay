@@ -7,7 +7,7 @@ import chardet
 # it needs to match exactly the file.
 
 # input_file = 'exampleJSON.json'
-input_file = 'dataset_instagram-api-scraper_2023-04-26_21-46-52-430.json'
+input_file = 'dataset_instagram-api-scraper.json'
 output_file = 'jsonOutput.csv'
 
 # This is the folder path where the Apify export file resides as well
@@ -35,11 +35,12 @@ with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
     writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType'])
     # Write data rows
     for d in data:
-        latest_posts = d['latestPosts']
-        full_name = d['fullName']
-        for post in latest_posts:
-            row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), post.get('type', ''), post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', '')]
-            writer.writerow(row)
+        if d['username'] != 'Restricted profile':
+            latest_posts = d['latestPosts']
+            full_name = d['fullName']
+            for post in latest_posts:
+                row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), post.get('type', ''), post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', '')]
+                writer.writerow(row)
 '''
 # Write data to CSV file
 with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:

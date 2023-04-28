@@ -30,7 +30,7 @@ camp_elig = False
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
 # input_file = 'inputstm2022.csv'
-input_file = 'jsonOutput.csv'
+input_file = 'jsonOutputFinal.csv'
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
@@ -48,7 +48,7 @@ def determine_encoding(file_path):
     with open(file_path, 'rb') as file:
         result = chardet.detect(file.read())
     return result['encoding']
-
+'''
 # Before the csv file is imported for manipulation 
 # add a column to the file at the end.  This column
 # is intended to store a Y/N flag for if the user participated
@@ -80,18 +80,35 @@ def add_campaign_col(in_file, encoding):
         writer.writerows(rows)
 
     return
-
+'''
+'''
+def stmHashtagCheck(reader):
+    print(reader)
+    for row in reader:
+        #print(row)
+        if len(row) < 2:  # Skip rows that do not have at least two elements
+            continue
+        hashtags = row[0].strip('[]').split(', ')
+        for tag in hashtags:
+            if tag.strip("'") == 'selftapemay' and row[3] == 'Video':
+                return True
+                # return true value
+                #print(row[0:8])
+            else:
+                return False
+                #continue
+'''
+'''
 # Identify the columns in the csv file that include the word
 # `hashtag` in their name.  This will be the starting point for me to
 # loop through the `hashtag` columns to see if they used the campaign
 # hashtag (e.g. `thewitcher`).
-'''
 def hashtag_columns(csv_reader):
     header_row = next(csv_reader)
     all_cols = []
-    search_string = "hashtags"
+    search_string = "hashtag"
     hashtag_cols = ['ownerUsername']
-    output_rows = []
+    #output_rows = []
     # Create a list to store the rows of the output CSV file
     output_rows = []
 
@@ -111,8 +128,8 @@ def hashtag_columns(csv_reader):
     
     # return hashtag_cols
     return output_rows
-'''
-'''
+
+
     # Identify all the headers
     for header in header_row:
         all_cols.append(header)
@@ -123,69 +140,41 @@ def hashtag_columns(csv_reader):
         if search_string in header:
             hashtag_cols.append(header)
 '''
-
-'''
-This function is intended to take the string in the column titled hashtags
-and check for the presence of the value 'selftapemay' as a hashtag
-'''
-def check_selftapemay(string):
-    # Convert the string to a list
-    lst = eval(string)
-
-    # Create a dictionary with the list elements as keys and True as values
-    dct = dict.fromkeys(lst, True)
-
-    # Check if 'selftapemay' is in the dictionary keys
-    return 'selftapemay' in dct
-
+    
 
 # Loop through every column that has the `hashtag` in its name
 # and see if the campaign hashtag(s) were mentioned
-def campaign_check(string):
+def campaign_check(dataRow):
 
     # This variable identifies the campaign hashtag.
     # Current assumption is there will only be one campaign hashtag
     # at a time.
     camp_hashtag = "selftapemaylotr"
 
-    lst = eval(string)
-
-    # Create a dictionary with the list elements as keys and True as values
-    dct = dict.fromkeys(lst, True)
-
-    # Check if 'selftapemay' is in the dictionary keys
-    return camp_hashtag in dct
     # Loop through all of the items in this dictionary
     # and check to see if the user leveraged the campaign hashtag
     # If they did use it than the function should return a 'True' value.  Otherwise
     # the function should return a 'False' value.
-   # for key, value in dataRow.items():
-   #     if value == camp_hashtag:
-   #         return True
+    for key, value in dataRow.items():
+        if value == camp_hashtag:
+            return True
 
-    #return False
+    return False
+
+# **********************************************
+# ******************MAIN************************
+# **********************************************
 
 # Determine the encoding type of the csv file
 encoding = determine_encoding(input_csv)
 
-# Add the 'campaignFlag' to the source CSV file
-add_campaign_col(input_csv, encoding)
-
 # List of column names to keep
-columns_to_keep = ['id','ownerFullName','ownerUsername','timestamp', 'type', 'campaignFlag', 'url', 'hashtags','_id', '_createdDate', '_updatedDate', '_owner']
-#columns_to_keep['productType'] = columns_to_keep.pop('type')
+columns_to_keep = ['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType',  'hashtag/0', 'hashtag/1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']
 
-#index = columns_to_keep.index('type')
-
-#columns_to_keep[index] = 'productType'
-
-# print("---BEGIN---")
 # Read the input CSV file
 with open(input_csv, 'r', encoding=encoding) as input_file:
     reader = csv.DictReader(input_file)
-    #header = next(reader)  # read the first row as header
 
-    #hash_columns = hashtag_columns(reader)
     # Write the output CSV file
     with open(output_csv, 'w', newline='', encoding=encoding) as output_file:
         columns_to_write = columns_to_keep
@@ -194,28 +183,15 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
         # Write the header row
         writer.writeheader()
-        # ******************************************
-        # DEBUGGING THE READER DICTIONARY
-        # ******************************************
-        # Iterate over the dictionary and print each key-value pair
-        # for row in reader:
-        #     for key, value in row.items():
-        #         print(key, ':', value)
-        #     print() # Add an extra line between rows
 
-        # ******************************************
-        # END DEBUGGING CODE
-        # ******************************************
         # Write the data rows, keeping only the specified columns
         for i, row in enumerate(reader):
 
             # Read in the row of data to output
             output_row = {key: row[key] for key in columns_to_keep}
 
-            check_selftapemay(columns_to_keep[7])
-            campaign_check(columns_to_keep['hashtags'])
             # Call the campaign check function to see if users participated in the campaign
-            #camp_check = campaign_check(hash_columns, output_row['ownerUsername'], {key: row[key] for key in hash_columns})
+            camp_check = campaign_check(row)
 
             # Add the '@' symbol to the IG handle to match user profile data
             # at selftapemay.com
@@ -225,11 +201,11 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
             output_row['_owner'] = output_row['ownerUsername']
 
             # Based on the results returned from campaign_check set the value accordingly
-            if campaign_check:
+            if camp_check:
                 output_row['campaignFlag'] = 'Y'
             else:
                 output_row['campaignFlag'] = 'N'
-
+            
             # Convert date/time string to formatted date/time stamp
             if output_row['timestamp'] != '':
 
@@ -240,23 +216,18 @@ with open(input_csv, 'r', encoding=encoding) as input_file:
 
                 # Parse the string into a datetime object
                 timestamp_dt = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%fZ')
-                #print(timestamp_dt)
+
                 # Convert the datetime object to the desired format
                 bigquery_timestamp_str = timestamp_dt.strftime('%Y-%m-%d %H:%M:%S.%f UTC')
-
-                #print(bigquery_timestamp_str) # Output: 2023-02-07 17:13:20.000000 UTC
 
                 # *****************************
                 # END TIMESTAMP CONVERSION
                 # *****************************
 
-                #date_string = output_row['timestamp']
-                #dt = datetime.strptime(date_string, date_format)
                 output_row['timestamp'] = timestamp_dt
                 output_row['_createdDate'] = timestamp_dt
                 output_row['_updatedDate'] = timestamp_dt
 
             # Write out data to CSV file
-
-            if start_dttm <= timestamp_dt <= end_dttm and output_row['type'] == 'Video' and check_selftapemay:
+            if start_dttm <= timestamp_dt <= end_dttm and output_row['type'] == 'Video':
                 writer.writerow(output_row)

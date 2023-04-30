@@ -14,7 +14,7 @@ date_format = '%Y-%m-%d %H:%M:%S'
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
 
 # This variable WILL needed to be updated each year
-start_dttm = datetime(2022,1,1,0,0,0,1)
+start_dttm = datetime(2023,5,1,0,0,0,1)
 
 # This is the end date for the timeframe you are performing the data
 # clean-up for.  The format is (yyyy,m,d,h,m,s)

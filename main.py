@@ -4,7 +4,13 @@ import datetime
 import subprocess
 
 pythonFile = ''
+
+# Windows filepath
 folderLocation = 'D:\\github_projects\\selftapemay\\'
+
+# Mac filepath
+folderLocation = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
+
 '''Order:
 Initial file needs to be named 'dataset_instagram-api-scraper.json' and located in 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
 1) instagramJSONParser.py

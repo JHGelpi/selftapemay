@@ -14,8 +14,12 @@ headerRow = ['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
-# file_path = 'D:\\consulting\\AudreyHelpsActors\\'
+
+# Windows filepath
 file_path = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
+
+# Mac filepath
+#file_path = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
 
 # Determine encoding
 def determine_encoding(file_path):

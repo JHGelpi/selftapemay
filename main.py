@@ -37,3 +37,10 @@ print(now, ": Executing ", pythonFile, "...")
 subprocess.run(['python', folderLocation + pythonFile])
 now = datetime.datetime.now()
 print(now, ": ", pythonFile, "Completed!")
+
+pythonFile = 'urlDiffs.py'
+now = datetime.datetime.now()
+print(now, ": Executing ", pythonFile, "...")
+subprocess.run(['python', folderLocation + pythonFile])
+now = datetime.datetime.now()
+print(now, ": ", pythonFile, "Completed!")

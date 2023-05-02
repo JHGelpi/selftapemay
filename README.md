@@ -20,20 +20,22 @@ Steps:
 5) Click `Save`
 6) Click `Start`
 7) After results are returned export the results to **JSON** file format and save to the local drive
+**IMPORTANT** Before running Python script export the results from `selectInstagramVideos` to the same directory as main.py and name it `gcpInstagramExport.csv`.  This will be used to compare existing posts and not duplicate uploads.
 8) File name should be `dataset_instagram-api-scraper.json` otherwise it won't get picked up
 9) Folder path should match the `file_path` variables within the python scripts listed in [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py)
 10) Run the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script
-11) Script will output the needed columns in a file named `videoOutput.csv`.
+11) Script will output the needed columns in a file named `videoOutput.csv` and the diffs to a file titled `diffs.csv`
+12) The `diffs.csv` file is what needs to be uploaded to GCP
 
 ### [GCP](https://console.cloud.google.com/bigquery?project=self-tape-may)
-Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has completed successfully you will need to upload the `videoOutput.csv` file into GCP.  To do this:
+Once the [main.py](https://github.com/JHGelpi/selftapemay/blob/main/main.py) python script has completed successfully you will need to upload the `diffs.csv` file into GCP.  To do this:
 1) Log into console.cloud.google.com and navigate to BigQuery
 2) Upload data by using the `Local file` option
     - There is an `Add Data` button that you need to click
     - This button will give you a prompt and you need to select `Local file`
 4) You will be presented with prompts:
     - `Create table from` should have the value of `Upload`
-    - `Select file` should have the `videoOutput.csv` file
+    - `Select file` should have the `diffs.csv` file
     - `File format` should automatically change to `csv`.  If it doesn't - change it to `csv`
     - `Project` should be `self-tape-may`
     - `Dataset` should be `self_tape_may_data`

@@ -15,7 +15,8 @@ folderLocation = 'D:\\github_projects\\selftapemay\\'
 Initial file needs to be named 'dataset_instagram-api-scraper.json' and located in 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
 1) instagramJSONParser.py
 2) hashtagParser.py
-3) jsonOuputToCSV.py'''
+3) jsonOuputToCSV.py
+4) urlDiffs.py'''
 
 pythonFile = 'instagramJSONParser.py'
 now = datetime.datetime.now()

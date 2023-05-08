@@ -7,7 +7,7 @@ import chardet
 # it needs to match exactly the file.
 
 # input_file = 'exampleJSON.json'
-input_file = 'dataset_instagram-api-scraper_kaytra.json'
+input_file = 'dataset_instagram-api-scraper.json'
 output_file = 'jsonOutput.csv'
 
 # This is the folder path where the Apify export file resides as well
@@ -36,14 +36,34 @@ with open(file_path + input_file, 'r', encoding=encoding) as f:
 with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
     # Write header row
-    writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType'])
+    writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'childPostVid'])
     # Write data rows
     for d in data:
         if d['username'] != 'Restricted profile':
             latest_posts = d['latestPosts']
             full_name = d['fullName']
-            for post in latest_posts:
-                row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), post.get('type', ''), post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', '')]
+            #*********************************
+            # loop through the latestPosts and childPosts and print their ids
+            childPostVid = ''
+            for i in range(len(data)):
+                if 'latestPosts' in data[i]:
+                    for post in data[i]['latestPosts']:
+                        #print(f"Post ID: {post['id']}")
+                        for child_post in post['childPosts']:
+                            if child_post['type'] == 'Video':
+                                #print(f"\tChild Post ID: {child_post['id']}")
+                                #print(f"\tChild Post ID: {child_post['type']}")
+                                childPostVid = 'Y'
+                                break
+            #*********************************
+            for post in latest_posts: 
+                #*********************************
+                if childPostVid == 'Y':
+                    postType = 'Video'
+                else:
+                    postType = post.get('type', '')  
+                #*********************************
+                row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
                 writer.writerow(row)
 '''
 # Write data to CSV file

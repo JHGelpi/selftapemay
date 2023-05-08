@@ -7,7 +7,7 @@ import chardet
 # it needs to match exactly the file.
 
 # input_file = 'exampleJSON.json'
-input_file = 'dataset_instagram-api-scraper_2023-05-05_20-49-35-239.json'
+input_file = 'dataset_instagram-api-scraper_kaytra.json'
 output_file = 'jsonOutput.csv'
 
 # This is the folder path where the Apify export file resides as well

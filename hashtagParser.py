@@ -10,7 +10,7 @@ output_file = 'jsonOutputFinal.csv'
 selfTape = 'selftapemay'
 selfTapeCampaign = 'selftapemaylotr'
 selfTapeHashtag = ''
-headerRow = ['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType',  'hashtag/0', 'hashtag/1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']
+headerRow = ['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'childPostVid',  'hashtag/0', 'hashtag/1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be

@@ -41,6 +41,7 @@ with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
     for d in data:
         if d['username'] != 'Restricted profile':
             latest_posts = d['latestPosts']
+            print(latest_posts)
             full_name = d['fullName']
             #*********************************
             # loop through the latestPosts and childPosts and print their ids
@@ -48,6 +49,8 @@ with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
             for i in range(len(data)):
                 if 'latestPosts' in data[i]:
                     for post in data[i]['latestPosts']:
+                        if data[i]['id'] == '3097962891307534033':
+                            print("stop here!")
                         #print(f"Post ID: {post['id']}")
                         for child_post in post['childPosts']:
                             if child_post['type'] == 'Video':

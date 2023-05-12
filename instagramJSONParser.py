@@ -1,13 +1,15 @@
 import json
 import csv
 import chardet
+import shutil
+
 # from datetime import datetime
 
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
 
 # input_file = 'exampleJSON.json'
-input_file = 'dataset_instagram-api-scraper.json'
+input_file = 'dataset_instagram-api-scraper_2023-05-12_01-24-03-810.json'
 output_file = 'jsonOutput.csv'
 
 # This is the folder path where the Apify export file resides as well
@@ -15,6 +17,7 @@ output_file = 'jsonOutput.csv'
 
 # Windows filepath
 file_path = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
+archiveFilePath = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\apifyRunData\\'
 
 # Mac filepath
 #file_path = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
@@ -38,44 +41,29 @@ with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
     # Write header row
     writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'childPostVid'])
     # Write data rows
+    childPostVid = ''
     for d in data:
         if d['username'] != 'Restricted profile':
-            latest_posts = d['latestPosts']
-            print(latest_posts)
-            full_name = d['fullName']
-            #*********************************
-            # loop through the latestPosts and childPosts and print their ids
-            childPostVid = ''
-            for i in range(len(data)):
-                if 'latestPosts' in data[i]:
-                    for post in data[i]['latestPosts']:
-                        if data[i]['id'] == '3097962891307534033':
-                            print("stop here!")
-                        #print(f"Post ID: {post['id']}")
-                        for child_post in post['childPosts']:
-                            if child_post['type'] == 'Video':
-                                #print(f"\tChild Post ID: {child_post['id']}")
-                                #print(f"\tChild Post ID: {child_post['type']}")
-                                childPostVid = 'Y'
-                                break
-            #*********************************
-            for post in latest_posts: 
-                #*********************************
-                if childPostVid == 'Y':
+            for i in d['latestPosts']:
+                if i['type'] == 'Video':
+                    childPostVid = 'Y'
                     postType = 'Video'
+                    #row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
+                    #row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
+                    row = [i.get('id', ''), d.get('fullName', ''),i.get('ownerUsername', ''), postType, i.get('url', ''), i.get('hashtags', ''), i.get('timestamp', ''), i.get('productType', ''), childPostVid]
+                    writer.writerow(row)
+                elif len(i['childPosts']) > 0:
+                    for l in i['childPosts']:
+                        if l['type'] == 'Video':
+                            childPostVid = 'Y'
+                            postType = 'Video'
+                            row = [l.get('id', ''), d.get('fullName', ''),i.get('ownerUsername', ''), postType, l.get('url', ''), i.get('hashtags', ''), i.get('timestamp', ''), i.get('productType', ''), childPostVid]
+                            writer.writerow(row)
+                            #break
+                        else:
+                            childPostVid = 'N'
                 else:
-                    postType = post.get('type', '')  
-                #*********************************
-                row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
-                writer.writerow(row)
-'''
-# Write data to CSV file
-with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
-    writer = csv.writer(f)
-    # Write header row
-    writer.writerow(['ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType'])
-    # Write data rows
-    for post in latest_posts:
-        row = [post['ownerUsername'], post['type'], post['url'], post['hashtags'], post['timestamp'], post['productType']]
-        writer.writerow(row)
-'''
+                    childPostVid = 'N'
+
+# move the file to the archive folder
+shutil.move(file_path + input_file, archiveFilePath)

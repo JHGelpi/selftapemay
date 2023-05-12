@@ -2,15 +2,8 @@ import json
 import csv
 import chardet
 import shutil
-
-# from datetime import datetime
-
-# This is the file name for the initial input file downloaded from Apify
-# it needs to match exactly the file.
-
-# input_file = 'exampleJSON.json'
-input_file = 'dataset_instagram-api-scraper_2023-05-12_01-24-03-810.json'
-output_file = 'jsonOutput.csv'
+import glob
+import os
 
 # This is the folder path where the Apify export file resides as well
 # as the location of where the output csv will be
@@ -21,6 +14,17 @@ archiveFilePath = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\apifyRunData\\'
 
 # Mac filepath
 #file_path = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
+
+# This is the file name for the initial input file downloaded from Apify
+# it needs to match exactly the file.
+
+input_file = ''
+files = glob.glob(file_path + "dataset_instagram-api-scraper_*.json")
+
+for file in files:
+    input_file = os.path.basename(file)
+
+output_file = 'jsonOutput.csv'
 
 # Determine encoding
 def determine_encoding(file_path):

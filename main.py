@@ -1,9 +1,7 @@
 # Data cleansing for apify data import
 # Code writing assisted by ChatGPT :-)
-
 import datetime
 import subprocess
-
 
 pythonFile = ''
 

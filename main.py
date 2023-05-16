@@ -1,7 +1,12 @@
 # Data cleansing for apify data import
 # Code writing assisted by ChatGPT :-)
+# pip dependencies
+'''
+pip install apify
+'''
 import datetime
 import subprocess
+from apify import ApifyClient
 
 pythonFile = ''
 

@@ -20,8 +20,8 @@ start_dttm = datetime(2023,5,1,0,0,0,1)
 # clean-up for.  The format is (yyyy,m,d,h,m,s)
 
 # This variable WILL needed to be updated each year
-end_dttm = datetime(2023,5,31,23,59,59)
-
+#end_dttm = datetime(2023,5,31,23,59,59)
+end_dttm = datetime(2023,6,1,10,0,0)
 # This variable is used to return whether the user used the proper
 # hashtag to qualify/be counted toward the campaign (e.g. in 2022 the campaign
 # was The Witcher)

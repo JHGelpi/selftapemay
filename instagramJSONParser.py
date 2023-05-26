@@ -10,10 +10,12 @@ import os
 
 # Windows filepath
 file_path = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
-archiveFilePath = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\apifyRunData\\'
+#archiveFilePath = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\apifyRunData\\'
+archiveFilePath = file_path + 'apifyRunData\\'
 
 # Mac filepath
 #file_path = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
+#archiveFilePath = file_path + 'apifyRunData/'
 
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.

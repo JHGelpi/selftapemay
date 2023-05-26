@@ -9,7 +9,7 @@ output = 'diffs.csv'
 folderLocation = 'D:\\Nextcloud\\Consulting\\selfTapeMay\\'
 
 # Mac filepath
-#folderLocation = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/'
+#folderLocation = '/Users/wegelpi/Nextcloud/Consulting/selfTapeMay/' 
 
 # Determine encoding
 def determine_encoding(file_path):

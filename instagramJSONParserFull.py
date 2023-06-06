@@ -23,15 +23,15 @@ archiveFilePath = file_path + 'apifyRunData\\'
 
 # This is the file name for the initial input file downloaded from Apify
 # it needs to match exactly the file.
-
 input_file = ''
 files = glob.glob(file_path + "dataset_instagram-api-scraper_*.json")
 
 for file in files:
     input_file = os.path.basename(file)
 
-output_file = 'jsonOutput.csv'
+output_file = 'jsonHashtagOutput.csv'
 
+# Determine encoding
 def determine_encoding(file_path):
     with open(file_path, 'rb') as file:
         detector = chardet.UniversalDetector()
@@ -41,12 +41,6 @@ def determine_encoding(file_path):
                 break
         detector.close()
     return detector.result['encoding']
-
-# Determine encoding
-#def determine_encoding(file_path):
-#    with open(file_path, 'rb') as file:
-#        result = chardet.detect(file.read())
-#    return result['encoding']
 
 # Load JSON data from a file
 # Determine the encoding type of the csv file
@@ -60,59 +54,26 @@ now = datetime.datetime.now()
 print(now, ": Loading file...")
 with open(file_path + input_file, 'r', encoding=encoding) as f:
     data = json.load(f)
-
 now = datetime.datetime.now()
 print(now, ": Analyzing JSON and writing to CSV...")
+
 # Write data to CSV file
 with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f)
     # Write header row
-    writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'childPostVid'])
+    writer.writerow(['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'postType', 'childPostVid'])
     # Write data rows
     childPostVid = ''
     for d in data:
-        if d['ownerUsername'] != 'Restricted profile':
-            if 'latestPosts' in d:
-                for i in d['latestPosts']:
-                    if i['type'] == 'Video':
-                        childPostVid = 'Y'
-                        postType = 'Video'
-                        #row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
-                        #row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
-                        row = [i.get('id', ''), d.get('fullName', ''),i.get('ownerUsername', ''), postType, i.get('url', ''), i.get('hashtags', ''), i.get('timestamp', ''), i.get('productType', ''), childPostVid]
+        if 'ownerUsername' in d:
+            if d['type'] == 'Sidecar':
+                for e in d['childPosts']:
+                    if e['type'] == 'Video':
+                        row = [e.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), 'Sidecar', e.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), e.get('type', ''), childPostVid]
                         writer.writerow(row)
-                    elif len(i['childPosts']) > 0:
-                        for l in i['childPosts']:
-                            if l['type'] == 'Video':
-                                childPostVid = 'Y'
-                                postType = 'Video'
-                                row = [l.get('id', ''), d.get('fullName', ''),i.get('ownerUsername', ''), postType, l.get('url', ''), i.get('hashtags', ''), i.get('timestamp', ''), i.get('productType', ''), childPostVid]
-                                writer.writerow(row)
-                                #break
-                            else:
-                                childPostVid = 'N'
-                    else:
-                        childPostVid = 'N'
-            else:
-                if d['type'] == 'Video':
-                    childPostVid = 'Y'
-                    postType = 'Video'
-                    #row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
-                    #row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
-                    row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
-                    writer.writerow(row)
-                elif len(d['childPosts']) > 0:
-                    for l in d['childPosts']:
-                        if l['type'] == 'Video':
-                            childPostVid = 'Y'
-                            postType = 'Video'
-                            row = [l.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, l.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
-                            writer.writerow(row)
-                            #break
-                        else:
-                            childPostVid = 'N'
-                else:
-                    childPostVid = 'N'
+            elif d['type'] == 'Video':
+                row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), d.get('type', ''), d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('type', ''), childPostVid]
+                writer.writerow(row)
 now = datetime.datetime.now()
 print(now, ": Archiving JSON file...")
 # move the file to the archive folder

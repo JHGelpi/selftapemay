@@ -54,8 +54,6 @@ with open(file_path + output_file, mode='w', encoding='utf-8', newline='') as f:
                 if i['type'] == 'Video':
                     childPostVid = 'Y'
                     postType = 'Video'
-                    #row = [post.get('id', ''), post.get('fullName', ''),post.get('ownerUsername', ''), postType, post.get('url', ''), post.get('hashtags', ''), post.get('timestamp', ''), post.get('productType', ''), childPostVid]
-                    #row = [d.get('id', ''), d.get('fullName', ''),d.get('ownerUsername', ''), postType, d.get('url', ''), d.get('hashtags', ''), d.get('timestamp', ''), d.get('productType', ''), childPostVid]
                     row = [i.get('id', ''), d.get('fullName', ''),i.get('ownerUsername', ''), postType, i.get('url', ''), i.get('hashtags', ''), i.get('timestamp', ''), i.get('productType', ''), childPostVid]
                     writer.writerow(row)
                 elif len(i['childPosts']) > 0:

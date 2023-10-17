@@ -3,7 +3,6 @@
 import datetime
 import subprocess
 
-pythonFile = ''
 pythonInterpreter = "/usr/bin/python3"  # Replace with the actual path to the Python interpreter
 
 # Windows filepath
@@ -19,47 +18,14 @@ Initial file needs to be named 'dataset_instagram-api-scraper.json' and located 
 2) hashtagParser.py
 3) jsonOuputToCSV.py
 4) urlDiffs.py'''
-'''
-pythonFile = 'instagramJSONParser.py'
-now = datetime.datetime.now()
-print(now, ": Executing ", pythonFile, "...")
-#Windows
-subprocess.run(['python', folderLocation + pythonFile])
 
-#MacOS
-#subprocess.run([pythonInterpreter, folderLocation + pythonFile])
-now = datetime.datetime.now()
-print(now, ": ", pythonFile, "Completed!")
-'''
-pythonFile = 'hashtagParser.py'
-now = datetime.datetime.now()
-print(now, ": Executing ", pythonFile, "...")
-#Windows
-subprocess.run(['python', folderLocation + pythonFile])
+def execute_python_file(python_file):
+    now = datetime.datetime.now()
+    print(now, ": Executing ", python_file, "...")
+    subprocess.run(['python', folderLocation + python_file])
+    now = datetime.datetime.now()
+    print(now, ": ", python_file, "Completed!")
 
-#MacOS
-#subprocess.run([pythonInterpreter, folderLocation + pythonFile])
-now = datetime.datetime.now()
-print(now, ": ", pythonFile, "Completed!")
-
-pythonFile = 'jsonOuputToCSV.py'
-now = datetime.datetime.now()
-print(now, ": Executing ", pythonFile, "...")
-#Windows
-subprocess.run(['python', folderLocation + pythonFile])
-
-#MacOS
-#subprocess.run([pythonInterpreter, folderLocation + pythonFile])
-now = datetime.datetime.now()
-print(now, ": ", pythonFile, "Completed!")
-
-pythonFile = 'urlDiffs.py'
-now = datetime.datetime.now()
-print(now, ": Executing ", pythonFile, "...")
-#Windows
-subprocess.run(['python', folderLocation + pythonFile])
-
-#MacOS
-#subprocess.run([pythonInterpreter, folderLocation + pythonFile])
-now = datetime.datetime.now()
-print(now, ": ", pythonFile, "Completed!")
+execute_python_file('hashtagParser.py')
+execute_python_file('jsonOuputToCSV.py')
+execute_python_file('urlDiffs.py')

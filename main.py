@@ -1,13 +1,13 @@
-import bigquery_client
-import apify_client
-import data_processor
+import bigqueryClient
+import apifyClient
+import dataProcessor
 
 def main():
-    users = bigquery_client.get_users()
+    users = bigqueryClient.get_users()
     for user in users:
-        raw_data = apify_client.scrape_instagram(user)
-        cleaned_data = data_processor.process_data(raw_data)
-        bigquery_client.insert_posts(cleaned_data)
+        raw_data = apifyClient.scrape_instagram(user)
+        cleaned_data = dataProcessor.process_data(raw_data)
+        bigqueryClient.insert_posts(cleaned_data)
 
 if __name__ == "__main__":
     main()

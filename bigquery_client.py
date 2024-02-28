@@ -30,7 +30,7 @@ if users is not None:
     # print("Results:")
     for user in users:
         # For every user I neeed to loop through and call the apify_client.py code
-        print(user)
+        print(user['instagramHandle'])
 else:
     print("No users found or an error occurred.")
 

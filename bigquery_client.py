@@ -19,6 +19,7 @@ from google.cloud import bigquery
 
 # Import the scrape_instagram function from apifyClient.py
 from apifyClient import scrape_instagram
+from data_processor import process_csv
 
 # Initialize the BigQuery client
 client = bigquery.Client()
@@ -62,10 +63,9 @@ with open(csv_file_path, mode='w', newline='') as file:
 
 print(f"CSV file saved: {csv_file_path}")
 
+selftapemay_hashtag = 'selftapemay'
+campaign_hashtag = 'asmr'
+processed_file_path = process_csv(csv_file_path, selftapemay_hashtag, campaign_hashtag)
 
-'''
-def insert_posts(data):
-    # Function to insert data into the BigQuery 'tblInstagramData' table
-    pass
-'''
+print(f"Processed file saved as: {processed_file_path}")
 

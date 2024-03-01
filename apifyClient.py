@@ -16,7 +16,7 @@ from apify_client import ApifyClient
 #jsonResult = ""
 
 # Apify URL build
-intResults = 5
+resultsLimit = 10
 filePath = "/home/wesgelpi/secrets/apifySecret.txt"
 apiURL = "https://api.apify.com/v2/acts/"
 #input_data = {}
@@ -37,7 +37,7 @@ def scrape_instagram(user):
     # Build the Apify API Payload
     run_input = {
         "username": [user],
-        "resultsLimit": 10,
+        "resultsLimit": resultsLimit,
     }
     scraped_data = []  # List to hold the results
 

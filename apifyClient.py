@@ -5,14 +5,15 @@
 # https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=
 
 import requests
-import json
+#import json
 from apify_client import ApifyClient
 
 # user variable from bigquery_client.py
 #user = bigqueryUser
 #user = "audreyhelpsactorspodcast"
-user = "tikka.thedog"
-jsonResult = ""
+#user = "tikka.thedog"
+#user = instagram_handle
+#jsonResult = ""
 
 # Apify URL build
 intResults = 5
@@ -38,6 +39,7 @@ def scrape_instagram(user):
         "username": [user],
         "resultsLimit": 10,
     }
+    scraped_data = []  # List to hold the results
 
     try:
         # Run the Actor and wait for it to finish
@@ -46,23 +48,24 @@ def scrape_instagram(user):
         # Fetch and print Actor results from the run's dataset (if there are any)
         for item in client.dataset(run["defaultDatasetId"]).iterate_items():
             # Desired fields
-            # id, type, ownerUsername, shortURL, timestamp, childPosts
-            # print(item)
-            print('====BEGIN====')
-            print('id: ', item['id'])
-            print('Type: ', item['type'])
-            print('ownerUsername: ', item['ownerUsername'])
-            print('hashtags: ', item['hashtags'])
-            print('shortURL: ', item['url'])
-            print('timestamp: ', item['timestamp'])
-            print('childPosts[]: ', item['childPosts'])
-            print('****END****')
-        #response = requests.post(apiURL, json=payload, headers=headers)
-        #response.raise_for_status()
-        return run
+            # item['id'], item['type'], item['ownerUsername'], item['hashtags'], item['url']
+            # item['timestamp'], item['childPosts']
+            # Extracting desired fields
+            data_entry = {
+                'id': item.get('id'),
+                'type': item.get('type'),
+                'ownerUsername': item.get('ownerUsername'),
+                'hashtags': item.get('hashtags'),
+                'url': item.get('url'),
+                'timestamp': item.get('timestamp'),
+                'childPosts': item.get('childPosts', [])
+            }
+            scraped_data.append(data_entry)
+        
+        return scraped_data
     except requests.exceptions.RequestException as e:
         print(f"Error while calling Apify API: {e}")
         return None
 
-jsonResult = scrape_instagram(user)
+#jsonResult = scrape_instagram(user)
 #print (jsonResult)

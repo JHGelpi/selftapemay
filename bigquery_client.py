@@ -3,7 +3,22 @@
 # Functions to connect to BigQuery, query the tblInstagramUsers table, and insert data into the tblInstagramData table.
 # Use the Google Cloud Python SDK for BigQuery.
 
+from datetime import datetime
+import csv
+# Get the current date and time
+now = datetime.now()
+# Format it as a string, e.g., "2024-02-21_17-51-57"
+formatted_now = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+# Define a single CSV file name with the current date and timestamp
+csv_file_name = f"instagram_scrape_results_{formatted_now}.csv"
+# Define the CSV file path, e.g., "/mnt/data/" for saving in this environment
+csv_file_path = f"/home/wesgelpi/Downloads/{csv_file_name}"
+
 from google.cloud import bigquery
+
+# Import the scrape_instagram function from apifyClient.py
+from apifyClient import scrape_instagram
 
 # Initialize the BigQuery client
 client = bigquery.Client()
@@ -26,13 +41,27 @@ def get_users():
 
 users = get_users()
 
-if users is not None:
-    # print("Results:")
-    for user in users:
-        # For every user I neeed to loop through and call the apify_client.py code
-        print(user['instagramHandle'])
-else:
-    print("No users found or an error occurred.")
+# Open the CSV file once before the loop
+with open(csv_file_path, mode='w', newline='') as file:
+    fieldnames = ['id', 'type', 'ownerUsername', 'hashtags', 'url', 'timestamp', 'childPosts']
+    writer = csv.DictWriter(file, fieldnames=fieldnames)
+    writer.writeheader()
+
+    if users is not None:
+        for user in users:
+            # For every user I neeed to loop through and call the apify_client.py code
+            #print(user['instagramHandle'])
+            # Call the scrape_instagram function with the Instagram handle
+            instagram_handle = user['instagramHandle']
+            scrape_result = scrape_instagram(instagram_handle)
+            # Write each item in the scrape_result to the CSV
+            for item in scrape_result:
+                writer.writerow(item)
+    else:
+        print("No users found or an error occurred.")
+
+print(f"CSV file saved: {csv_file_path}")
+
 
 '''
 def insert_posts(data):

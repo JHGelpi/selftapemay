@@ -6,6 +6,7 @@
     # - Filter out posts that were already uploaded to BigQuery
 
 import csv
+import ast
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     output_file_path = input_file_path.replace("scrape_results", "processed_results")
@@ -24,8 +25,14 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
             row['campaignFlag'] = False
 
             # Convert the string representation of the list back to a list
-            hashtags = eval(row['hashtags'])
+            #hashtags = eval(row['hashtags'])
 
+            # Inside your loop where you're processing each row
+            try:
+                hashtags = ast.literal_eval(row['hashtags'])
+            except (ValueError, SyntaxError):
+                hashtags = []  # Fallback to an empty list in case of a parsing error
+            
             # Check if 'selftapemay' is in hashtags
             if selftapemay_hashtag in hashtags:
                 row['selftapemayFlag'] = True
@@ -37,12 +44,13 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
             writer.writerow(row)
 
     return output_file_path
-
+'''
 # Example usage
-#selftapemay_hashtag = 'selftapemay'
-#campaign_hashtag = 'asmr'  # Replace with your actual campaign hashtag
+selftapemay_hashtag = 'selftapemay'
+campaign_hashtag = 'asmr'  # Replace with your actual campaign hashtag
 #processed_file_path = process_csv(csv_file_path, campaign_hashtag)
-#input_file_path = '/home/wesgelpi/Downloads/instagram_scrape_results_2024-02-29_22-28-54.csv'  # Update the path
+input_file_path = '/home/wesgelpi/Downloads/instagram_scrape_results_2024-03-04_21-28-23.csv'  # Update the path
 
-#processed_file_path = process_csv(input_file_path, campaign_hashtag)
-#print(f"Processed file saved as: {processed_file_path}")
+processed_file_path = process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag)
+print(f"Processed file saved as: {processed_file_path}")
+'''

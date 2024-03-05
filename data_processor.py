@@ -2,7 +2,8 @@
 
 # Functions to process the raw data from Apify.
 # Filter posts by video/reel type, date range, and check for duplicates.
-# Use Pandas for efficient data processing.
+# Tasks left to do:
+    # - Filter out posts that were already uploaded to BigQuery
 
 import csv
 

@@ -5,6 +5,7 @@
 
 from datetime import datetime
 import csv
+import json
 # Get the current date and time
 now = datetime.now()
 # Format it as a string, e.g., "2024-02-21_17-51-57"
@@ -26,7 +27,6 @@ client = bigquery.Client()
 
 def get_users():
     # Function to retrieve user data from BigQuery
-
     # Retrieve user data from the BigQuery table.
     query = """
         SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramUsers`
@@ -42,24 +42,33 @@ def get_users():
 
 users = get_users()
 
+# Assuming 'users' is an iterable of user information
+instagram_handles = [user['instagramHandle'] for user in users]  # Collect all handles
+
+# Now, call scrape_instagram with the string of Instagram handles
+print("Scraping results starting at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+scrape_result = scrape_instagram(instagram_handles)
+print("Completed scraping results at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "writing data to csv...")
+
 # Open the CSV file once before the loop
 with open(csv_file_path, mode='w', newline='') as file:
     fieldnames = ['id', 'type', 'ownerUsername', 'hashtags', 'url', 'timestamp', 'childPosts']
     writer = csv.DictWriter(file, fieldnames=fieldnames)
     writer.writeheader()
 
-    if users is not None:
+    '''if users is not None:
         for user in users:
             # For every user I neeed to loop through and call the apify_client.py code
             #print(user['instagramHandle'])
             # Call the scrape_instagram function with the Instagram handle
             instagram_handle = user['instagramHandle']
+            print ("Scraping results for ", instagram_handle, " starting at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             scrape_result = scrape_instagram(instagram_handle)
-            # Write each item in the scrape_result to the CSV
-            for item in scrape_result:
-                writer.writerow(item)
-    else:
-        print("No users found or an error occurred.")
+            print ("Completed scraping results for ", instagram_handle, " completed at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " writing data to csv...")
+            # Write each item in the scrape_result to the CSV'''
+    for item in scrape_result:
+        writer.writerow(item)
+print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 print(f"CSV file saved: {csv_file_path}")
 

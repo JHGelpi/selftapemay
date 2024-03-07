@@ -7,17 +7,26 @@
 
 import csv
 import ast
+from datetime import datetime
+from google.cloud import bigquery
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     output_file_path = input_file_path.replace("scrape_results", "processed_results")
+    
+    # Step 1: Process and filter the initial CSV
+    temp_output_path = input_file_path.replace("scrape_results", "temp_processed_results")
+    final_output_path = input_file_path.replace("scrape_results", "final_processed_results")
 
     with open(input_file_path, mode='r', newline='', encoding='utf-8') as infile, \
-         open(output_file_path, mode='w', newline='', encoding='utf-8') as outfile:
+         open(temp_output_path, mode='w', newline='', encoding='utf-8') as temp_outfile:
+         #open(output_file_path, mode='w', newline='', encoding='utf-8') as outfile:
         reader = csv.DictReader(infile)
         fieldnames = reader.fieldnames + ['selftapemayFlag', 'campaignFlag']  # Add new columns
-
-        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-        writer.writeheader()
+        
+        temp_writer = csv.DictWriter(temp_outfile, fieldnames=fieldnames)
+        temp_writer.writeheader()
+        #writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+        #writer.writeheader()
 
         for row in reader:
             # Initialize flags as False
@@ -25,9 +34,7 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
             row['campaignFlag'] = False
 
             # Convert the string representation of the list back to a list
-            #hashtags = eval(row['hashtags'])
 
-            # Inside your loop where you're processing each row
             try:
                 hashtags = ast.literal_eval(row['hashtags'])
             except (ValueError, SyntaxError):
@@ -41,9 +48,55 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
             if campaign_hashtag in hashtags:
                 row['campaignFlag'] = True
 
-            writer.writerow(row)
+            if row['selftapemayFlag']:
+                temp_writer.writerow(row)
+            #writer.writerow(row)
+    
+    # Step 2: Download BigQuery data - Handled outside this script or by a separate function
+    # Initialize the BigQuery client
+    client = bigquery.Client()
 
-    return output_file_path
+    def get_posts():
+        # Function to retrieve user data from BigQuery
+        # Retrieve user data from the BigQuery table.
+        query = """
+            SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`
+        """
+        query_job = client.query(query)  # Make an API request.
+        
+        try:
+            posts = query_job.result()  # Waits for the query to finish
+            return posts
+        except Exception as e:
+            print("Error in get_users:", e)
+            return None
+
+    posts = get_posts()
+    
+    # Step 3: Compare and generate diffs
+    bq_data_path = 'path_to_downloaded_BigQuery_data.csv'  # Set this to your downloaded BigQuery data path
+    diffs_output_path = f"instagram_diffs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+    
+    existing_ids = set()
+    with open(bq_data_path, mode='r', newline='', encoding='utf-8') as bq_file:
+        bq_reader = csv.DictReader(bq_file)
+        for row in bq_reader:
+            existing_ids.add(row['id'])
+    
+    with open(temp_output_path, mode='r', newline='', encoding='utf-8') as temp_infile, \
+         open(diffs_output_path, mode='w', newline='', encoding='utf-8') as diffs_outfile:
+        reader = csv.DictReader(temp_infile)
+        writer = csv.DictWriter(diffs_outfile, fieldnames=reader.fieldnames)
+        writer.writeheader()
+        
+        for row in reader:
+            if row['id'] not in existing_ids:
+                writer.writerow(row)
+
+    # Step 4: Append new data to BigQuery - Handled outside this script or by a separate function
+
+    return diffs_output_path
+    #return output_file_path
 '''
 # Example usage
 selftapemay_hashtag = 'selftapemay'

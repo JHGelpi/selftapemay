@@ -6,9 +6,11 @@
 
 import requests
 from apify_client import ApifyClient
+#from apify_client import ApifyClientAsync
+#import asyncio
 
 # Apify URL build
-memLimit = "&memory=32"
+memLimit = 32768
 resultsLimit = 10
 filePath = "/home/wesgelpi/secrets/apifySecret.txt"
 apiURL = "https://api.apify.com/v2/acts/"
@@ -18,7 +20,7 @@ apiURL = apiURL + actor_id + "?token="
 with open(filePath, 'r') as file:
     fileContent = file.read().strip()
 
-apiURL = apiURL + fileContent + memLimit
+apiURL = apiURL + fileContent
 
 # Initialize the ApifyClient with my API Token
 client = ApifyClient(fileContent)
@@ -35,7 +37,7 @@ def scrape_instagram(user):
 
     try:
         # Run the Actor and wait for it to finish
-        run = client.actor("xMc5Ga1oCONPmWJIa").call(run_input=run_input)
+        run = client.actor("xMc5Ga1oCONPmWJIa").call(run_input=run_input, memory_mbytes=memLimit)
 
         # Fetch and print Actor results from the run's dataset (if there are any)
         for item in client.dataset(run["defaultDatasetId"]).iterate_items():
@@ -58,6 +60,3 @@ def scrape_instagram(user):
     except requests.exceptions.RequestException as e:
         print(f"Error while calling Apify API: {e}")
         return None
-
-#jsonResult = scrape_instagram(user)
-#print (jsonResult)

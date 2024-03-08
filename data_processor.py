@@ -4,6 +4,12 @@
 # Filter posts by video/reel type, date range, and check for duplicates.
 # Tasks left to do:
     # - Filter out posts that were already uploaded to BigQuery
+'''UPDATE FROM 3.7.2024:
+
+I have been successful in downloading from Google BigQuery and uploading/appending a file back
+to BigQuery.  However, the results are not filtering our appropriately so I need to look at
+how the filter in the dataframe is actually filtering out already known values in the
+id column of tbleInstagramData'''
 
 import csv
 import ast
@@ -13,8 +19,16 @@ from google.cloud.bigquery import SchemaField
 from datetime import datetime
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
+    # Initialize an empty DataFrame for diffs_df with the same columns as in your CSV
+    diffs_df = pd.DataFrame(columns=['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'hashtag_0', 'hashtag_1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner'])
+
     # Step 1: Load and filter the initial CSV
     df = pd.read_csv(input_file_path)
+
+    # Ensure the DataFrame includes all necessary columns, even if they are initially empty
+    for column in ['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'hashtag_0', 'hashtag_1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner']:
+        if column not in df.columns:
+            df[column] = pd.NA  # Assign a missing value placeholder
 
     # Safely evaluate the hashtags column, accounting for NaN values
     safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
@@ -31,10 +45,19 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     bq_df = client.query(query).to_dataframe()
 
     # Step 3: Compare and generate diffs (Existing logic)
+    existing_ids = set(bq_df['id'])
+    diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
 
     # Before saving, adjust diffs_df to match the schema exactly
     # Ensure all required fields are present or add them with default values
     diffs_df = diffs_df.assign(
+        id=pd.NA,
+        ownerFullName=pd.NA,
+        ownerUsername=pd.NA,
+        type=pd.NA,
+        url=pd.NA,
+        hashtags=pd.NA,
+        timestamp=pd.NA,
         productType=pd.NA,
         hashtag_0=pd.NA,
         hashtag_1=pd.NA,
@@ -46,7 +69,7 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     )
     existing_ids = set(bq_df['id'])
     diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
-    
+
     # Reorder diffs_df columns to match the BigQuery schema order exactly
     schema_order = [
         "id",
@@ -66,11 +89,12 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
         "_owner",
     ]
 
+    # Fill missing values for STRING fields with empty strings to avoid NULLs in BigQuery
+    diffs_df = diffs_df.fillna("")
+
     # Filter and reorder the DataFrame columns
     diffs_df = diffs_df[schema_order]
 
-    # Fill missing values for STRING fields with empty strings to avoid NULLs in BigQuery
-    diffs_df = diffs_df.fillna("")
     # Save diffs to CSV
     formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     diffs_output_path = f"/home/wesgelpi/Downloads/instagram_diffs_{formatted_now}.csv"
@@ -101,14 +125,14 @@ def append_to_bigquery(csv_file_path, dataset_table):
             SchemaField("type", "STRING"),
             SchemaField("url", "STRING"),
             SchemaField("hashtags", "STRING"),
-            SchemaField("timestamp", "STRING"),
+            SchemaField("timestamp", "TIMESTAMP"),
             SchemaField("productType", "STRING"),
             SchemaField("hashtag_0", "STRING"),
             SchemaField("hashtag_1", "STRING"),
-            SchemaField("campaignFlag", "STRING"),
-            SchemaField("_id", "STRING"),
-            SchemaField("_createdDate", "STRING"),
-            SchemaField("_updatedDate", "STRING"),
+            SchemaField("campaignFlag", "BOOLEAN"),
+            SchemaField("_id", "FLOAT"),
+            SchemaField("_createdDate", "TIMESTAMP"),
+            SchemaField("_updatedDate", "TIMESTAMP"),
             SchemaField("_owner", "STRING"),
         ],
         source_format=bigquery.SourceFormat.CSV,

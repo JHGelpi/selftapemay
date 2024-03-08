@@ -9,6 +9,7 @@ import csv
 import ast
 import pandas as pd
 from google.cloud import bigquery
+from google.cloud.bigquery import SchemaField
 from datetime import datetime
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
@@ -29,10 +30,47 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"
     bq_df = client.query(query).to_dataframe()
 
-    # Step 3: Compare and generate diffs
+    # Step 3: Compare and generate diffs (Existing logic)
+
+    # Before saving, adjust diffs_df to match the schema exactly
+    # Ensure all required fields are present or add them with default values
+    diffs_df = diffs_df.assign(
+        productType=pd.NA,
+        hashtag_0=pd.NA,
+        hashtag_1=pd.NA,
+        campaignFlag=lambda x: x['campaignFlag'].astype(str),
+        _id=pd.NA,
+        _createdDate=pd.NA,
+        _updatedDate=pd.NA,
+        _owner=pd.NA,
+    )
     existing_ids = set(bq_df['id'])
     diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
+    
+    # Reorder diffs_df columns to match the BigQuery schema order exactly
+    schema_order = [
+        "id",
+        "ownerFullName",
+        "ownerUsername",
+        "type",
+        "url",
+        "hashtags",
+        "timestamp",
+        "productType",
+        "hashtag_0",
+        "hashtag_1",
+        "campaignFlag",
+        "_id",
+        "_createdDate",
+        "_updatedDate",
+        "_owner",
+    ]
 
+    # Filter and reorder the DataFrame columns
+    diffs_df = diffs_df[schema_order]
+
+    # Fill missing values for STRING fields with empty strings to avoid NULLs in BigQuery
+    diffs_df = diffs_df.fillna("")
     # Save diffs to CSV
     formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     diffs_output_path = f"/home/wesgelpi/Downloads/instagram_diffs_{formatted_now}.csv"
@@ -41,7 +79,7 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     dataset_table = 'self-tape-may.self_tape_may_data.tblInstagramData'  # Specify your dataset and table
     append_to_bigquery(diffs_output_path, dataset_table)
-    
+
     return diffs_output_path
 
 # Step 4: Append new data to BigQuery is handled outside this script
@@ -49,12 +87,34 @@ def append_to_bigquery(csv_file_path, dataset_table):
     client = bigquery.Client()
     table_id = dataset_table
 
-    job_config = bigquery.LoadJobConfig(
+    '''job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.CSV,
         skip_leading_rows=1,  # Skip the header row.
         autodetect=True,  # Autodetect schema and options.
-        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)  # Append to existing table.
-
+        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)  # Append to existing table.'''
+    # Explicitly define the schema to match your BigQuery table's schema
+    job_config = bigquery.LoadJobConfig(
+        schema=[
+            SchemaField("id", "STRING"),
+            SchemaField("ownerFullName", "STRING"),
+            SchemaField("ownerUsername", "STRING"),
+            SchemaField("type", "STRING"),
+            SchemaField("url", "STRING"),
+            SchemaField("hashtags", "STRING"),
+            SchemaField("timestamp", "STRING"),
+            SchemaField("productType", "STRING"),
+            SchemaField("hashtag_0", "STRING"),
+            SchemaField("hashtag_1", "STRING"),
+            SchemaField("campaignFlag", "STRING"),
+            SchemaField("_id", "STRING"),
+            SchemaField("_createdDate", "STRING"),
+            SchemaField("_updatedDate", "STRING"),
+            SchemaField("_owner", "STRING"),
+        ],
+        source_format=bigquery.SourceFormat.CSV,
+        skip_leading_rows=1,
+        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+    
     with open(csv_file_path, "rb") as source_file:
         load_job = client.load_table_from_file(source_file, table_id, job_config=job_config)
     

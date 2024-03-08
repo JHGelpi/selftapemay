@@ -7,96 +7,61 @@
 
 import csv
 import ast
-from datetime import datetime
+import pandas as pd
 from google.cloud import bigquery
+from datetime import datetime
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
-    output_file_path = input_file_path.replace("scrape_results", "processed_results")
-    
-    # Step 1: Process and filter the initial CSV
-    temp_output_path = input_file_path.replace("scrape_results", "temp_processed_results")
-    final_output_path = input_file_path.replace("scrape_results", "final_processed_results")
+    # Step 1: Load and filter the initial CSV
+    df = pd.read_csv(input_file_path)
 
-    with open(input_file_path, mode='r', newline='', encoding='utf-8') as infile, \
-         open(temp_output_path, mode='w', newline='', encoding='utf-8') as temp_outfile:
-         #open(output_file_path, mode='w', newline='', encoding='utf-8') as outfile:
-        reader = csv.DictReader(infile)
-        fieldnames = reader.fieldnames + ['selftapemayFlag', 'campaignFlag']  # Add new columns
-        
-        temp_writer = csv.DictWriter(temp_outfile, fieldnames=fieldnames)
-        temp_writer.writeheader()
-        #writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-        #writer.writeheader()
+    # Safely evaluate the hashtags column, accounting for NaN values
+    safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
+    df['hashtags_list'] = df['hashtags'].apply(safe_eval)
 
-        for row in reader:
-            # Initialize flags as False
-            row['selftapemayFlag'] = False
-            row['campaignFlag'] = False
+    # Filter based on selftapemay_hashtag and campaign_hashtag
+    df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag in x)
+    df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag in x)
+    filtered_df = df[df['selftapemayFlag']]
 
-            # Convert the string representation of the list back to a list
-
-            try:
-                hashtags = ast.literal_eval(row['hashtags'])
-            except (ValueError, SyntaxError):
-                hashtags = []  # Fallback to an empty list in case of a parsing error
-            
-            # Check if 'selftapemay' is in hashtags
-            if selftapemay_hashtag in hashtags:
-                row['selftapemayFlag'] = True
-
-            # Check for the campaign hashtag
-            if campaign_hashtag in hashtags:
-                row['campaignFlag'] = True
-
-            if row['selftapemayFlag']:
-                temp_writer.writerow(row)
-            #writer.writerow(row)
-    
-    # Step 2: Download BigQuery data - Handled outside this script or by a separate function
-    # Initialize the BigQuery client
+    # Step 2: Download BigQuery data and convert to DataFrame
     client = bigquery.Client()
+    query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"
+    bq_df = client.query(query).to_dataframe()
 
-    def get_posts():
-        # Function to retrieve user data from BigQuery
-        # Retrieve user data from the BigQuery table.
-        query = """
-            SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`
-        """
-        query_job = client.query(query)  # Make an API request.
-        
-        try:
-            posts = query_job.result()  # Waits for the query to finish
-            return posts
-        except Exception as e:
-            print("Error in get_users:", e)
-            return None
-
-    posts = get_posts()
-    
     # Step 3: Compare and generate diffs
-    bq_data_path = 'path_to_downloaded_BigQuery_data.csv'  # Set this to your downloaded BigQuery data path
-    diffs_output_path = f"instagram_diffs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-    
-    existing_ids = set()
-    with open(bq_data_path, mode='r', newline='', encoding='utf-8') as bq_file:
-        bq_reader = csv.DictReader(bq_file)
-        for row in bq_reader:
-            existing_ids.add(row['id'])
-    
-    with open(temp_output_path, mode='r', newline='', encoding='utf-8') as temp_infile, \
-         open(diffs_output_path, mode='w', newline='', encoding='utf-8') as diffs_outfile:
-        reader = csv.DictReader(temp_infile)
-        writer = csv.DictWriter(diffs_outfile, fieldnames=reader.fieldnames)
-        writer.writeheader()
-        
-        for row in reader:
-            if row['id'] not in existing_ids:
-                writer.writerow(row)
+    existing_ids = set(bq_df['id'])
+    diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
 
-    # Step 4: Append new data to BigQuery - Handled outside this script or by a separate function
+    # Save diffs to CSV
+    formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    diffs_output_path = f"/home/wesgelpi/Downloads/instagram_diffs_{formatted_now}.csv"
+    diffs_df.to_csv(diffs_output_path, index=False)
+    print(f"Diffs file saved as: {diffs_output_path}")
 
+    dataset_table = 'self-tape-may.self_tape_may_data.tblInstagramData'  # Specify your dataset and table
+    append_to_bigquery(diffs_output_path, dataset_table)
+    
     return diffs_output_path
-    #return output_file_path
+
+# Step 4: Append new data to BigQuery is handled outside this script
+def append_to_bigquery(csv_file_path, dataset_table):
+    client = bigquery.Client()
+    table_id = dataset_table
+
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.CSV,
+        skip_leading_rows=1,  # Skip the header row.
+        autodetect=True,  # Autodetect schema and options.
+        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)  # Append to existing table.
+
+    with open(csv_file_path, "rb") as source_file:
+        load_job = client.load_table_from_file(source_file, table_id, job_config=job_config)
+    
+    load_job.result()  # Wait for the job to complete.
+
+    print(f"Appended data to {table_id} from {csv_file_path}. Job ID: {load_job.job_id}")
+
 '''
 # Example usage
 selftapemay_hashtag = 'selftapemay'

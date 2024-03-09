@@ -12,8 +12,8 @@ now = datetime.now()
 formatted_now = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 # Define a single CSV file name with the current date and timestamp
-#csv_file_name = f"instagram_scrape_results_{formatted_now}.csv"
-csv_file_name = "instagram_scrape_results_2024-03-04_21-28-23.csv"
+csv_file_name = f"instagram_scrape_results_{formatted_now}.csv"
+#csv_file_name = "instagram_scrape_results_2024-03-04_21-28-23.csv"
 # Define the CSV file path, e.g., "/mnt/data/" for saving in this environment
 csv_file_path = f"/home/wesgelpi/Downloads/{csv_file_name}"
 
@@ -45,7 +45,7 @@ users = get_users()
 
 # Assuming 'users' is an iterable of user information
 instagram_handles = [user['instagramHandle'] for user in users]  # Collect all handles
-'''
+
 # Now, call scrape_instagram with the string of Instagram handles
 print("Scraping results starting at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 scrape_result = scrape_instagram(instagram_handles)
@@ -61,7 +61,7 @@ with open(csv_file_path, mode='w', newline='') as file:
         writer.writerow(item)
 print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-print(f"CSV file saved: {csv_file_path}")'''
+print(f"CSV file saved: {csv_file_path}")
 
 selftapemay_hashtag = 'selftapemay'
 campaign_hashtag = 'asmr'

@@ -65,7 +65,7 @@ print(f"CSV file saved: {csv_file_path}")
 
 selftapemay_hashtag = 'selftapemay'
 campaign_hashtag = 'asmr'
-processed_file_path = process_csv(csv_file_path, selftapemay_hashtag, campaign_hashtag)
+processed_file_path = process_csv(csv_file_path, selftapemay_hashtag.lower(), campaign_hashtag.lower())
 
 print(f"Processed file saved as: {processed_file_path}")
 

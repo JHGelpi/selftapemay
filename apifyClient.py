@@ -6,8 +6,6 @@
 
 import requests
 from apify_client import ApifyClient
-#from apify_client import ApifyClientAsync
-#import asyncio
 
 # Apify URL build
 memLimit = 32768
@@ -41,9 +39,6 @@ def scrape_instagram(user):
 
         # Fetch and print Actor results from the run's dataset (if there are any)
         for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-            # Desired fields
-            # item['id'], item['type'], item['ownerUsername'], item['hashtags'], item['url']
-            # item['timestamp'], item['childPosts']
             # Extracting desired fields
             data_entry = {
                 'id': item.get('id'),

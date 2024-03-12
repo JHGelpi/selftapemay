@@ -35,8 +35,8 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     df['hashtags_list'] = df['hashtags'].apply(safe_eval)
 
     # Filter based on selftapemay_hashtag and campaign_hashtag
-    df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag in x)
-    df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag in x)
+    df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
+    df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
     filtered_df = df[df['selftapemayFlag']]
 
     # Step 2: Download BigQuery data and convert to DataFrame
@@ -45,9 +45,9 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     bq_df = client.query(query).to_dataframe()
 
     # Export to CSV file - This is a validation step that should be omitted from final solution
-    '''formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     bigquery_output_path = f"/home/wesgelpi/Downloads/instagram_BigQuery_{formatted_now}.csv"
-    bq_df.to_csv(bigquery_output_path, index=False)'''
+    bq_df.to_csv(bigquery_output_path, index=False)
 
     # Ensure 'id' column is string and trim whitespace in both DataFrames
     filtered_df['id'] = filtered_df['id'].astype(str).str.strip()

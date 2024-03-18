@@ -34,6 +34,16 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
     df['hashtags_list'] = df['hashtags'].apply(safe_eval)
 
+    # Convert 'timestamp' column to datetime
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+    # Define start and end of the date range
+    start_date = datetime(2024, 5, 1, 0, 0, 0)
+    end_date = datetime(2024, 5, 31, 23, 59, 59)
+
+    # Filter df for posts within the specified date range
+    filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
+
     # Filter based on selftapemay_hashtag and campaign_hashtag
     df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
     df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)

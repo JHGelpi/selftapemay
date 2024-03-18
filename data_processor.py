@@ -39,6 +39,11 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
     filtered_df = df[df['selftapemayFlag']]
 
+    # Export to CSV file - This is a validation step that should be omitted from final solution
+    formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    bigquery_output_path = f"/home/wesgelpi/Downloads/instagram_filteredresults_{formatted_now}.csv"
+    filtered_df.to_csv(bigquery_output_path, index=False)
+
     # Step 2: Download BigQuery data and convert to DataFrame
     client = bigquery.Client()
     query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"

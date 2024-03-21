@@ -8,8 +8,8 @@
 # Insert the cleaned data into the tblInstagramData table.
 
 import bigquery_client
-import apifyClient
-import data_processor
+#import apifyClient
+#import data_processor
 
 def main():
     users = bigquery_client.get_users()

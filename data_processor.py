@@ -17,6 +17,7 @@ import pandas as pd
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
 from datetime import datetime
+import pytz
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     # Initialize an empty DataFrame for diffs_df with the same columns as in your CSV
@@ -38,8 +39,9 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
     # Define start and end of the date range
-    start_date = datetime(2024, 5, 1, 0, 0, 0)
-    end_date = datetime(2024, 5, 31, 23, 59, 59)
+    utc = pytz.UTC
+    start_date = utc.localize(datetime(2024, 1, 1, 0, 0, 0))
+    end_date = utc.localize(datetime(2024, 3, 31, 23, 59, 59))
 
     # Filter df for posts within the specified date range
     filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
@@ -169,6 +171,36 @@ def append_to_bigquery(csv_file_path, dataset_table):
     load_job.result()  # Wait for the job to complete.
 
     print(f"Appended data to {table_id} from {csv_file_path}. Job ID: {load_job.job_id}")
+
+    # Call the function with your specific parameters
+    #project_id = 'your-project-id'  # Google Cloud project ID
+    #dataset_id = 'self-tape-may'  # Dataset ID
+    dataset_table = 'self-tape-may.self_tape_may_data.tblActivityLog'  # Table ID
+    activity_message = "Processed CSV and updated diffs."  # Example log message
+
+    # Call the function at the end of the processing or wherever appropriate
+    append_activity_log(dataset_table, activity_message)
+
+def append_activity_log(dataset_table, activity_message):
+    client = bigquery.Client()
+
+    # Define the table you want to append to
+    table_ref = dataset_table
+    table = client.get_table(table_ref)  # Make an API request to fetch the table
+
+    # Prepare the row to insert
+    # Assuming the table has columns for a timestamp and a message
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)  # Current timestamp in UTC
+    rows_to_insert = [
+        {"activityType" : 'updateData', "activityDTTM": utc_now.isoformat(), "activityDescription": activity_message},
+    ]
+
+    # Insert the row into the table
+    errors = client.insert_rows_json(table, rows_to_insert)  # Make an API request
+    if errors == []:
+        print("New rows have been added.")
+    else:
+        print("Encountered errors while inserting rows: {}".format(errors))
 
 '''
 # Example usage

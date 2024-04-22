@@ -30,7 +30,7 @@ def get_users():
     # Function to retrieve user data from BigQuery
     # Retrieve user data from the BigQuery table.
     query = """
-        SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramUsers`
+        SELECT * FROM `self-tape-may.self_tape_may_data.viewSTMOptIn2024`
     """
     query_job = client.query(query)  # Make an API request.
     
@@ -44,7 +44,7 @@ def get_users():
 users = get_users()
 
 # Assuming 'users' is an iterable of user information
-instagram_handles = [user['instagramHandle'] for user in users]  # Collect all handles
+instagram_handles = [user['instagram'] for user in users]  # Collect all handles
 
 # Now, call scrape_instagram with the string of Instagram handles
 print("Scraping results starting at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -64,7 +64,7 @@ print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"
 print(f"CSV file saved: {csv_file_path}")
 
 selftapemay_hashtag = 'selftapemay'
-campaign_hashtag = 'asmr'
+campaign_hashtag = 'selftapemaybridgerton'
 processed_file_path = process_csv(csv_file_path, selftapemay_hashtag.lower(), campaign_hashtag.lower())
 
 print(f"Processed file saved as: {processed_file_path}")

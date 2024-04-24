@@ -47,9 +47,13 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
 
     # Filter based on selftapemay_hashtag and campaign_hashtag
-    df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
-    df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    filtered_df = df[df['selftapemayFlag']]
+    #df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
+    #df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
+    filtered_df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
+    filtered_df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
+    
+    # filtered_df = df[df['selftapemayFlag']]
+    filtered_df = filtered_df[filtered_df['selftapemayFlag']]
 
     # Export to CSV file - This is a validation step that should be omitted from final solution
     formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

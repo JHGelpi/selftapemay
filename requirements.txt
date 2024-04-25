@@ -1,0 +1,7 @@
+requests
+pandas
+chardet
+google-cloud-bigquery==3.17.1
+apify-client==1.6.4
+db-dtypes
+pytz

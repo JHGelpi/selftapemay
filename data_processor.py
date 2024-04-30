@@ -40,8 +40,8 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     # Define start and end of the date range
     utc = pytz.UTC
-    start_date = utc.localize(datetime(2024, 1, 1, 0, 0, 0))
-    end_date = utc.localize(datetime(2024, 4, 30, 23, 59, 59))
+    start_date = utc.localize(datetime(2024, 5, 1, 0, 0, 0))
+    end_date = utc.localize(datetime(2024, 5, 31, 23, 59, 59))
 
     # Filter df for posts within the specified date range
     filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]

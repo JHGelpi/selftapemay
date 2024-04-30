@@ -1,0 +1,2 @@
+0 8 * * * cd /home/wesgelpi/github/selftapemay/ && /usr/bin/python3 main.py
+

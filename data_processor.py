@@ -65,10 +65,10 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"
     bq_df = client.query(query).to_dataframe()
 
-    # Export to CSV file - This is a validation step that should be omitted from final solution
-    formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    bigquery_output_path = f"/home/wesgelpi/Downloads/instagram_BigQuery_{formatted_now}.csv"
-    bq_df.to_csv(bigquery_output_path, index=False)
+    ## Export to CSV file - This is a validation step that should be omitted from final solution
+    #formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    #bigquery_output_path = f"/home/wesgelpi/Downloads/instagram_BigQuery_{formatted_now}.csv"
+    #bq_df.to_csv(bigquery_output_path, index=False)
 
     # Ensure 'id' column is string and trim whitespace in both DataFrames
     filtered_df['id'] = filtered_df['id'].astype(str).str.strip()

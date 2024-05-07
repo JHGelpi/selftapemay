@@ -49,9 +49,16 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     # Filter based on selftapemay_hashtag and campaign_hashtag
     #df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
     #df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    filtered_df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
-    filtered_df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    
+    #filtered_df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
+    #filtered_df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
+    # Instead of directly assigning values to filtered_df, use .loc to modify it
+
+    #filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
+    filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in map(str.lower, x))
+
+    #filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
+    filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in map(str.lower, x))
+
     # filtered_df = df[df['selftapemayFlag']]
     filtered_df = filtered_df[filtered_df['selftapemayFlag']]
 
@@ -61,7 +68,9 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     filtered_df.to_csv(bigquery_output_path, index=False)
 
     # Step 2: Download BigQuery data and convert to DataFrame
-    client = bigquery.Client()
+    project_id = 'self-tape-may'
+    client = bigquery.Client(project=project_id)
+    #client = bigquery.Client()
     query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"
     bq_df = client.query(query).to_dataframe()
 
@@ -138,7 +147,9 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
 # Step 4: Append new data to BigQuery is handled outside this script
 def append_to_bigquery(csv_file_path, dataset_table):
-    client = bigquery.Client()
+    project_id = 'self-tape-may'
+    client = bigquery.Client(project=project_id)
+    #client = bigquery.Client()
     table_id = dataset_table
 
     '''job_config = bigquery.LoadJobConfig(
@@ -186,7 +197,9 @@ def append_to_bigquery(csv_file_path, dataset_table):
     append_activity_log(dataset_table, activity_message)
 
 def append_activity_log(dataset_table, activity_message):
-    client = bigquery.Client()
+    project_id = 'self-tape-may'
+    client = bigquery.Client(project=project_id)
+    #client = bigquery.Client()
 
     # Define the table you want to append to
     table_ref = dataset_table

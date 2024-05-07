@@ -24,7 +24,8 @@ from apifyClient import scrape_instagram
 from data_processor import process_csv
 
 # Initialize the BigQuery client
-client = bigquery.Client()
+project_id = 'self-tape-may'
+client = bigquery.Client(project=project_id)
 
 def get_users():
     # Function to retrieve user data from BigQuery

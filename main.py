@@ -12,6 +12,7 @@ import bigquery_client
 #import data_processor
 
 def main():
+    #project_id = 'self-tape-may'
     users = bigquery_client.get_users()
     #cleaned_data = data_processor.process_data()
     #for user in users:

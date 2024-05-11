@@ -3,6 +3,15 @@ from google.cloud import bigquery
 from datetime import datetime
 import pandas as pd
 import plotly.express as px
+import chart_studio
+import chart_studio.plotly as py
+
+filePath = "/home/wesgelpi/secrets/plotlySecret.txt"
+
+with open(filePath, 'r') as file:
+    fileContent = file.read().strip()
+
+chart_studio.tools.set_credentials_file(username='wgelpi', api_key=fileContent)
 
 def gcp_data(query):
     # Initialize the BigQuery client
@@ -27,14 +36,16 @@ def visualize_data_line(df, xaxis, yaxis, charttitle):
         #print(df.columns)  # Print the DataFrame columns to debug
         # Assuming 'timestamp' and 'id' are correct, update if necessary
         fig = px.line(df, x=xaxis, y=yaxis, title=charttitle)
-        fig.show()
+        py.plot(fig, filename=charttitle, auto_open=True)
+        #fig.show()
 
 def visualize_data_col(df, xaxis, yaxis, charttitle):
     if df is not None:
         #print(df.columns)  # Print the DataFrame columns to debug
         # Assuming 'timestamp' and 'id' are correct, update if necessary
         fig = px.bar(df, x=xaxis, y=yaxis, title=charttitle)
-        fig.show()
+        py.plot(fig, filename=charttitle, auto_open=True)
+        #fig.show()
 
 ## Query data - Daily posts
 #gcpdata = gcp_data("""

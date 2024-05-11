@@ -8,6 +8,7 @@
 # Insert the cleaned data into the tblInstagramData table.
 
 import bigquery_client
+import plotly_chart
 #import apifyClient
 #import data_processor
 
@@ -19,6 +20,7 @@ def main():
         #raw_data = apifyClient.scrape_instagram(user)
         #cleaned_data = data_processor.process_data(raw_data)
         #bigquery_client.insert_posts(cleaned_data)
+    #charts = plotly_chart()
 
 if __name__ == "__main__":
     main()

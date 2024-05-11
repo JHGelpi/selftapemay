@@ -9,18 +9,18 @@
 
 import bigquery_client
 import plotly_chart
-#import apifyClient
-#import data_processor
+#import datetime
+#import subprocess
 
 def main():
     #project_id = 'self-tape-may'
     users = bigquery_client.get_users()
-    #cleaned_data = data_processor.process_data()
-    #for user in users:
-        #raw_data = apifyClient.scrape_instagram(user)
-        #cleaned_data = data_processor.process_data(raw_data)
-        #bigquery_client.insert_posts(cleaned_data)
-    #charts = plotly_chart()
+    plotly_chart.plotly_main()
+
+#def gen_plotly():
+#    python_file = 'plotly_chart.py'
+#    folderLocation = '/home/wesgelpi/github/selftapemay/'
+#    subprocess.run(['python', folderLocation + python_file])
 
 if __name__ == "__main__":
     main()

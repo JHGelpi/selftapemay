@@ -66,34 +66,19 @@ ORDER BY
   date;""")
 
   # Visualize - Daily posts
-  visualize_data_line(gcpdata, 'date', 'id_count', 'Posts by Day')
+  visualize_data_col(gcpdata, 'date', 'id_count', 'Posts by Day')
 
   # Visualize - Cumulative posts
   visualize_data_line(gcpdata, 'date', 'cumulative_id_count', 'Cumulative by Day')
 
-  gcpdata = gcp_data("""SELECT
-    market,
-    id_count,
-    SUM(id_count) OVER (ORDER BY market) AS cumulative_id_count,
-    SUM(camp_count) OVER (ORDER BY market) AS cumulative_camp_count
-  FROM (
-    SELECT
-      CASE
-        WHEN p.market IS NULL THEN 'No Market'
-        ELSE p.market
-      END AS market,
-      COUNT(i.id) AS id_count,
-      COUNTIF(i.campaignFlag = True) AS camp_count
-    FROM
-      `self-tape-may.self_tape_may_data.tblInstagramData` i
-    JOIN
-      `self-tape-may.self_tape_may_data.tblSTMParticipantData` p ON p.Instagram = i.ownerUsername
-    GROUP BY
-      market
-  )
-  ORDER BY
-    market;""")
+  gcpdata = gcp_data("""SELECT SUM(a.numSelftapes) as count,
+a.market
+FROM `self-tape-may.self_tape_may_data.view-stm-leaderboard` a
+GROUP BY a.market
+ORDER BY SUM(a.numSelftapes) DESC;""")
 
   # Visualize - Cumulative posts by Market
-  visualize_data_col(gcpdata, 'market', 'cumulative_id_count', 'Cumulative by Market')
+  visualize_data_col(gcpdata, 'market', 'count', 'Cumulative by Market')
 
+if __name__ == "__main__":
+    plotly_main()

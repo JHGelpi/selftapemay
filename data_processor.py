@@ -53,11 +53,15 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     #filtered_df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
     # Instead of directly assigning values to filtered_df, use .loc to modify it
 
-    #filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
-    filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in map(str.lower, x))
+    #filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in map(str.lower, x))
+    filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(
+    lambda x: any(hashtag.lower() in map(str.lower, x) for hashtag in selftapemay_hashtag)
+    )
 
-    #filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in map(str.lower, x))
+    #filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in map(str.lower, x))
+    filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(
+    lambda x: any(campaign.lower() in map(str.lower, x) for campaign in campaign_hashtag)
+    )
 
     # filtered_df = df[df['selftapemayFlag']]
     filtered_df = filtered_df[filtered_df['selftapemayFlag']]

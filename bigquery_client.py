@@ -64,9 +64,9 @@ print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"
 
 print(f"CSV file saved: {csv_file_path}")
 
-selftapemay_hashtag = 'selftapemay'
-campaign_hashtag = 'selftapemaybridgerton'
-processed_file_path = process_csv(csv_file_path, selftapemay_hashtag.lower(), campaign_hashtag.lower())
+selftapemay_hashtag = ['selftapemay', 'selftapemay2024']
+campaign_hashtag = ['selftapemaybridgerton']
+processed_file_path = process_csv(csv_file_path, selftapemay_hashtag, campaign_hashtag)
 
 print(f"Processed file saved as: {processed_file_path}")
 

@@ -33,7 +33,7 @@ def visualize_data_line(df, xaxis, yaxis, charttitle):
         #print(df.columns)  # Print the DataFrame columns to debug
         # Assuming 'timestamp' and 'id' are correct, update if necessary
         fig = px.line(df, x=xaxis, y=yaxis, title=charttitle)
-        py.plot(fig, filename=charttitle, auto_open=True)
+        py.plot(fig, filename=charttitle, auto_open=False)
         #fig.show()
 
 def visualize_data_col(df, xaxis, yaxis, charttitle):
@@ -41,7 +41,7 @@ def visualize_data_col(df, xaxis, yaxis, charttitle):
         #print(df.columns)  # Print the DataFrame columns to debug
         # Assuming 'timestamp' and 'id' are correct, update if necessary
         fig = px.bar(df, x=xaxis, y=yaxis, title=charttitle)
-        py.plot(fig, filename=charttitle, auto_open=True)
+        py.plot(fig, filename=charttitle, auto_open=False)
         #fig.show()
 
 def plotly_main():

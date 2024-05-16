@@ -9,12 +9,12 @@
 
 import bigquery_client
 import plotly_chart
-import datetime
+from datetime import datetime
 #import subprocess
 
 def main():
     #project_id = 'self-tape-may'
-    print("starting to run bigquery_client.get_users() at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    #print("starting to run bigquery_client.get_users() at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     users = bigquery_client.get_users()
     print("Completed bigquery_client.get_users() at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "running plotly_chart...")
     plotly_chart.plotly_main()

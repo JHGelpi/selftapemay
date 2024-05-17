@@ -5,6 +5,7 @@
 
 from datetime import datetime
 import csv
+import json
 
 # Get the current date and time
 now = datetime.now()
@@ -30,9 +31,13 @@ client = bigquery.Client(project=project_id)
 def get_users():
     # Function to retrieve user data from BigQuery
     # Retrieve user data from the BigQuery table.
-    query = """
+    sql_file = '/home/wesgelpi/self_tape_may/sql_query.txt'
+    with open(sql_file, 'r') as file:
+        query = file.read().strip()
+
+    '''query = """
         SELECT * FROM `self-tape-may.self_tape_may_data.viewSTMOptIn2024`
-    """
+    """'''
     query_job = client.query(query)  # Make an API request.
     
     try:
@@ -64,8 +69,14 @@ print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"
 
 print(f"CSV file saved: {csv_file_path}")
 
-selftapemay_hashtag = ['selftapemay', 'selftapemay2024']
-campaign_hashtag = ['selftapemaybridgerton']
+json_file = '/home/wesgelpi/self_tape_may/hashtags.json'
+with open(json_file, 'r') as file:
+    hashtags = json.load(json_file)
+    selftapemay_hashtag = hashtags['selftapemay_hashtag']
+    campaign_hashtag = hashtags['campaign_hashtag']
+
+#selftapemay_hashtag = ['selftapemay', 'selftapemay2024']
+#campaign_hashtag = ['selftapemaybridgerton']
 processed_file_path = process_csv(csv_file_path, selftapemay_hashtag, campaign_hashtag)
 
 print(f"Processed file saved as: {processed_file_path}")

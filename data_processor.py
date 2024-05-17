@@ -18,6 +18,9 @@ from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
 from datetime import datetime
 import pytz
+# Function to parse the date string
+def parse_date(date_str):
+    return datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=pytz.UTC)
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     # Initialize an empty DataFrame for diffs_df with the same columns as in your CSV
@@ -40,9 +43,26 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     # Define start and end of the date range
     utc = pytz.UTC
-    start_date = utc.localize(datetime(2024, 5, 1, 0, 0, 0))
-    end_date = utc.localize(datetime(2024, 5, 31, 23, 59, 59))
 
+    start_end_date_file = ''
+    with open(start_end_date_file, 'r') as file:
+        lines = file.readlines()
+    for line in lines:
+        if "start_date:" in line:
+            start_date_str = line.split(": ")[1].strip()  # Extract the date string
+            start_date = parse_date(start_date_str)
+        elif "end_date:" in line:
+            end_date_str = line.split(": ")[1].strip()  # Extract the date string
+            end_date = parse_date(end_date_str)
+
+    #start_date = utc.localize(datetime(2024, 5, 1, 0, 0, 0))
+    start_date = utc.localize(start_date)
+    print (start_date)
+
+    #end_date = utc.localize(datetime(2024, 5, 31, 23, 59, 59))
+    end_date = utc.localize(end_date)
+    print (end_date)
+    
     # Filter df for posts within the specified date range
     filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
 

@@ -35,9 +35,14 @@ def get_users():
     with open(sql_file, 'r') as file:
         query = file.read().strip()
 
-    '''query = """
-        SELECT * FROM `self-tape-may.self_tape_may_data.viewSTMOptIn2024`
-    """'''
+    #print(query)
+
+    #query = """
+    #    SELECT * FROM `self-tape-may.self_tape_may_data.viewSTMOptIn2024`
+    #"""
+
+    #print(query)
+
     query_job = client.query(query)  # Make an API request.
     
     try:
@@ -71,10 +76,12 @@ print(f"CSV file saved: {csv_file_path}")
 
 json_file = '/home/wesgelpi/self_tape_may/hashtags.json'
 with open(json_file, 'r') as file:
-    hashtags = json.load(json_file)
+    hashtags = json.load(file)
     selftapemay_hashtag = hashtags['selftapemay_hashtag']
     campaign_hashtag = hashtags['campaign_hashtag']
 
+print(selftapemay_hashtag)
+print(campaign_hashtag)
 #selftapemay_hashtag = ['selftapemay', 'selftapemay2024']
 #campaign_hashtag = ['selftapemaybridgerton']
 processed_file_path = process_csv(csv_file_path, selftapemay_hashtag, campaign_hashtag)

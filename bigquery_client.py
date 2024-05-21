@@ -23,6 +23,7 @@ from google.cloud import bigquery
 # Import the scrape_instagram function from apifyClient.py
 from apifyClient import scrape_instagram
 from data_processor import process_csv
+from apify_post_scraper import scrape_instagram_posts, convert_json_to_csv
 
 # Initialize the BigQuery client
 project_id = 'self-tape-may'
@@ -64,13 +65,30 @@ print("Completed scraping results at: ", datetime.now().strftime("%Y-%m-%d %H:%M
 
 # Open the CSV file once before the loop
 with open(csv_file_path, mode='w', newline='') as file:
-    fieldnames = ['id', 'type', 'ownerUsername', 'hashtags', 'url', 'timestamp', 'childPosts']
+    fieldnames = ['id', 'type', 'ownerUsername', 'hashtags', 'url', 'timestamp']#, 'childPosts']
     writer = csv.DictWriter(file, fieldnames=fieldnames)
     writer.writeheader()
 
     for item in scrape_result:
         writer.writerow(item)
-print("Results written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+print("Results Apify reel scraper written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+print(f"CSV file saved: {csv_file_path}")
+
+# Repeate the process for the post_scraper api
+scrape_result = []
+#scrape_result = scrape_instagram_posts(instagram_handles)
+scrape_result = convert_json_to_csv(instagram_handles, csv_file_path)
+#convert_json_to_csv(instagram_handles, '/home/wesgelpi/Downloads/instagram_scrape_results_2024-05-20_06-00-01.csv')
+# Open the CSV file once before the loop
+'''with open(csv_file_path, mode='a', newline='') as file:
+    fieldnames = ['id', 'type', 'ownerUsername', 'hashtags', 'url', 'timestamp']#, 'childPosts']
+    writer = csv.DictWriter(file, fieldnames=fieldnames)
+    writer.writeheader()
+
+    for item in scrape_result:
+        writer.writerow(item)'''
+print("Results from Apify post scraper written to csv at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 print(f"CSV file saved: {csv_file_path}")
 

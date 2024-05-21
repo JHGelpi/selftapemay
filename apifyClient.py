@@ -9,10 +9,11 @@ from apify_client import ApifyClient
 
 # Apify URL build
 memLimit = 32768
-resultsLimit = 10
+resultsLimit = 40
 filePath = "/home/wesgelpi/secrets/apifySecret.txt"
 apiURL = "https://api.apify.com/v2/acts/"
 actor_id = "apify~instagram-reel-scraper/run-sync"
+#actor_id = "apify~instagram-post-scraper/run-sync"
 apiURL = apiURL + actor_id + "?token="
 
 with open(filePath, 'r') as file:
@@ -37,6 +38,10 @@ def scrape_instagram(user):
         # Run the Actor and wait for it to finish
         run = client.actor("xMc5Ga1oCONPmWJIa").call(run_input=run_input, memory_mbytes=memLimit)
 
+        # Instagram Post Scraper details
+        #run = client.actor("nH2AHrwxeTRJoN5hX").call(run_input=run_input, memory_mbytes=memLimit)
+
+
         # Fetch and print Actor results from the run's dataset (if there are any)
         for item in client.dataset(run["defaultDatasetId"]).iterate_items():
             # Extracting desired fields
@@ -46,8 +51,8 @@ def scrape_instagram(user):
                 'ownerUsername': item.get('ownerUsername'),
                 'hashtags': item.get('hashtags'),
                 'url': item.get('url'),
-                'timestamp': item.get('timestamp'),
-                'childPosts': item.get('childPosts', [])
+                'timestamp': item.get('timestamp')
+                #'childPosts': item.get('childPosts', [])
             }
             scraped_data.append(data_entry)
         

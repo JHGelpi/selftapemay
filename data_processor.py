@@ -35,6 +35,9 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
         if column not in df.columns:
             df[column] = pd.NA  # Assign a missing value placeholder
 
+    # Filter to only include rows where 'type' is 'Video'
+    df = df[df['type'] == 'Video']
+    
     # Safely evaluate the hashtags column, accounting for NaN values
     safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
     df['hashtags_list'] = df['hashtags'].apply(safe_eval)

@@ -37,9 +37,15 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     # Filter to only include rows where 'type' is 'Video'
     df = df[df['type'] == 'Video']
-    
+
     # Safely evaluate the hashtags column, accounting for NaN values
-    safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
+    def safe_eval(x):
+        try:
+            return ast.literal_eval(x) if pd.notna(x) else []
+        except (ValueError, SyntaxError):
+            return []
+    
+    #safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
     df['hashtags_list'] = df['hashtags'].apply(safe_eval)
 
     # Convert 'timestamp' column to datetime

@@ -170,7 +170,18 @@ def convert_json_to_csv(users, csv_file_path):
         df = pd.DataFrame(records)
         # Filter the DataFrame to include only the required columns
         filtered_df = df[required_columns]
+        
         # Check if the output CSV file exists
+        if os.path.isfile(csv_file_path):
+            # Read the existing CSV file
+            existing_df = pd.read_csv(csv_file_path)
+
+            # Get the set of existing URLs
+            existing_urls = set(existing_df['url'].dropna().tolist())
+
+            # Filter out rows in filtered_df where the URL already exists in existing_urls
+            filtered_df = filtered_df[~filtered_df['url'].isin(existing_urls)]
+        
         file_exists = os.path.isfile(csv_file_path)
         # Save the filtered DataFrame to the CSV file, appending if it exists
         filtered_df.to_csv(csv_file_path, mode='a', header=not file_exists, index=False)

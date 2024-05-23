@@ -40,10 +40,8 @@ def scrape_instagram_posts(user):
         scraped_data.append(data_entry)
     
     return scraped_data
-    #except requests.exceptions.RequestException as e:
-    #    print(f"Error while calling Apify API: {e}")
-    #    return None
-def format_child_posts(child_posts):
+
+'''def format_child_posts(child_posts):
     if not child_posts:
         return ""
     formatted = []
@@ -57,89 +55,40 @@ def format_child_posts(child_posts):
         }
         formatted.append(child_info)
     return json.dumps(formatted)  # Convert list of dicts to JSON string
-
-#def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None):
+'''
 def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, post_type=None):
-    
-    #print(f"Parsing post: {post}")
-    
-    #hashtags = post.get("hashtags", inherited_hashtags)
-    
-    #print(f"Parsing post: {post}")
+
     if inherited_hashtags is None:
         inherited_hashtags = []
 
     if not isinstance(inherited_hashtags, list):
         inherited_hashtags = [inherited_hashtags]
         
-    hashtags = post.get("hashtags", inherited_hashtags)
+    hashtags = post.get("hashtags", inherited_hashtags) or inherited_hashtags
 
     if not isinstance(hashtags, list):
         hashtags = []
     record = {
-        #"inputUrl": post.get("inputUrl"),
         "id": post.get("id"),
-        #"type": post.get("type"),
-        #"type": post.get("type") if post_type is None else post_type,  # Use post_type if provided
         "type": post.get("type") if not post.get("childPosts") else post.get("childPosts")[0].get("type", post.get("type")),
         "shortCode": post.get("shortCode"),
         "caption": post.get("caption"),
         "hashtags": hashtags,
-        #"hashtags": ', '.join(hashtags),
-        #"mentions": ', '.join(post.get("mentions", [])),
         "url": post.get("url"),
         "commentsCount": post.get("commentsCount"),
-        #"firstComment": post.get("firstComment"),
-        #"latestComments": ' | '.join([comment["text"] for comment in post.get("latestComments", [])]),
-        #"dimensionsHeight": post.get("dimensionsHeight"),
-        #"dimensionsWidth": post.get("dimensionsWidth"),
         "displayUrl": post.get("displayUrl"),
-        #"images": ', '.join(post.get("images", [])),
-        #"alt": post.get("alt"),
-        #"likesCount": post.get("likesCount"),
         "timestamp": post.get("timestamp"),
-        #"parent_id": parent_id,
-        #"ownerFullName": post.get("ownerFullName"),
         "ownerUsername": post.get("ownerUsername"),
         "ownerId": post.get("ownerId"),
-        #"isSponsored": post.get("isSponsored"),
         "videoUrl": post.get("videoUrl"),
-        #"videoViewCount": post.get("videoViewCount"),
-        #"videoPlayCount": post.get("videoPlayCount"),
         "productType": post.get("productType")
-        #"videoDuration": post.get("videoDuration"),
-        #"childPosts": post.get("childPosts")
-        #"childPosts": format_child_posts(post.get("childPosts", []))  # Format childPosts
     }
     records.append(record)
 
-'''for child in post.get("childPosts", []):
-        child_record = {
-            "id": child.get("id"),
-            "type": child.get("type"),  # Set the type field for the child post
-            "shortCode": child.get("shortCode"),
-            "caption": child.get("caption"),
-            "hashtags": ', '.join(child.get("hashtags", [])),
-            "url": child.get("url"),
-            "commentsCount": child.get("commentsCount"),
-            "displayUrl": child.get("displayUrl"),
-            "timestamp": child.get("timestamp"),
-            "ownerUsername": post.get("ownerUsername"),
-            "ownerId": post.get("ownerId"),
-            "videoUrl": child.get("videoUrl"),
-            "productType": child.get("productType"),
-            "childPosts": "[]"  # Child posts of child posts are not needed here
-        }
-        records.append(child_record)'''
-
-'''for child in post.get("childPosts", []):
-        parse_post_with_hashtags(child, parent_id=post.get("id"), inherited_hashtags=hashtags)#, post_type=child.get("type"))
-'''
-'''for child in post.get("childPosts", []):
-        child_record = child.copy()  # Create a copy of the child post
-        child_record["type"] = child.get("type")  # Set the type field for the child post
-        parse_post_with_hashtags(child_record, parent_id=post.get("id"), inherited_hashtags=hashtags)'''
-        #parse_post_with_hashtags(child, parent_id=post.get("id"), inherited_hashtags=hashtags)
+    for child in post.get("childPosts", []):
+        child_record = child.copy()
+        child_record["hashtags"] = hashtags  # Inherit parent's hashtags
+        parse_post_with_hashtags(child_record, inherited_hashtags=hashtags)
 
 def convert_json_to_csv(users, csv_file_path):
     schema_csv_path = '/home/wesgelpi/self_tape_may/apify_post_scrape_schema.csv'
@@ -153,17 +102,8 @@ def convert_json_to_csv(users, csv_file_path):
     required_columns = sample_csv.columns.tolist()
 
     json_data = scrape_instagram_posts(users)
-
-    #tmp file
-    '''json_file = '/home/wesgelpi/Downloads/dataset_instagram-post-scraper_2024-05-21_02-02-17-067.json'
-    with open(json_file, 'r') as file:
-        json_data = json.load(file)'''
-
-    #for user in users:
-        #json_data = scrape_instagram_posts(user)
         
     if json_data:
-        #records = []
         # Parse the main post and its child posts
         for post in json_data:
             parse_post_with_hashtags(post)
@@ -187,27 +127,11 @@ def convert_json_to_csv(users, csv_file_path):
         # Save the filtered DataFrame to the CSV file, appending if it exists
         filtered_df.to_csv(csv_file_path, mode='a', header=not file_exists, index=False)
 
-'''def get_users():
-    # Function to retrieve user data from BigQuery
-    # Retrieve user data from the BigQuery table.
-    sql_file = '/home/wesgelpi/self_tape_may/sql_query.txt'
-    with open(sql_file, 'r') as file:
-        query = file.read().strip()
-
-    query_job = client.query(query)  # Make an API request.
-    
-    try:
-        users = query_job.result()  # Waits for the query to finish
-        return users
-    except Exception as e:
-        print("Error in get_users:", e)
-        return None'''
-
 if __name__ == "__main__":
     print('Starting manual run...')
-    '''project_id = 'self-tape-may'
-    client = bigquery.Client(project=project_id)
-    users = get_users()'''
+    #project_id = 'self-tape-may'
+    #client = bigquery.Client(project=project_id)
+    #users = get_users()
     # Assuming 'users' is an iterable of user information
     #instagram_handles = [user['instagram'] for user in users]  # Collect all handles
     #print (instagram_handles)

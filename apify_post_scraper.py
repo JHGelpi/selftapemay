@@ -56,7 +56,8 @@ def scrape_instagram_posts(user):
         formatted.append(child_info)
     return json.dumps(formatted)  # Convert list of dicts to JSON string
 '''
-def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, post_type=None):
+#def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, post_type=None):
+def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, inherited_timestamp=None, inherited_ownerUsername=None, post_type=None):
 
     if inherited_hashtags is None:
         inherited_hashtags = []
@@ -65,9 +66,12 @@ def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, post
         inherited_hashtags = [inherited_hashtags]
         
     hashtags = post.get("hashtags", inherited_hashtags) or inherited_hashtags
+    timestamp = post.get("timestamp") or inherited_timestamp
+    ownerUsername = post.get("ownerUsername") or inherited_ownerUsername
 
     if not isinstance(hashtags, list):
         hashtags = []
+
     record = {
         "id": post.get("id"),
         "type": post.get("type") if not post.get("childPosts") else post.get("childPosts")[0].get("type", post.get("type")),
@@ -77,18 +81,23 @@ def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, post
         "url": post.get("url"),
         "commentsCount": post.get("commentsCount"),
         "displayUrl": post.get("displayUrl"),
-        "timestamp": post.get("timestamp"),
-        "ownerUsername": post.get("ownerUsername"),
+        #"timestamp": post.get("timestamp"),
+        "timestamp": timestamp,
+        #"ownerUsername": post.get("ownerUsername"),
+        "ownerUsername": ownerUsername,
         "ownerId": post.get("ownerId"),
         "videoUrl": post.get("videoUrl"),
         "productType": post.get("productType")
     }
-    records.append(record)
+
+    if not post.get("childPosts"):
+        records.append(record)
 
     for child in post.get("childPosts", []):
         child_record = child.copy()
         child_record["hashtags"] = hashtags  # Inherit parent's hashtags
-        parse_post_with_hashtags(child_record, inherited_hashtags=hashtags)
+        #parse_post_with_hashtags(child_record, inherited_hashtags=hashtags)
+        parse_post_with_hashtags(child_record, inherited_hashtags=hashtags, inherited_timestamp=timestamp, inherited_ownerUsername=ownerUsername)
 
 def convert_json_to_csv(users, csv_file_path):
     schema_csv_path = '/home/wesgelpi/self_tape_may/apify_post_scrape_schema.csv'
@@ -136,5 +145,5 @@ if __name__ == "__main__":
     #instagram_handles = [user['instagram'] for user in users]  # Collect all handles
     #print (instagram_handles)
     #if instagram_handles:
-    #    convert_json_to_csv(instagram_handles, '/home/wesgelpi/Downloads/instagram_scrape_results_2024-05-20_06-00-01.csv')
-    #print('Completed...')
+    #convert_json_to_csv(['josephinecroft'], '/home/wesgelpi/Downloads/instagram_scrape_results_josephinecroft_2024-05-29.csv')
+    print('Completed...')

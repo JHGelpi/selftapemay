@@ -74,7 +74,8 @@ def parse_post_with_hashtags(post, parent_id=None, inherited_hashtags=None, inhe
 
     record = {
         "id": post.get("id"),
-        "type": post.get("type") if not post.get("childPosts") else post.get("childPosts")[0].get("type", post.get("type")),
+        #"type": post.get("type") if not post.get("childPosts") else post.get("childPosts")[0].get("type", post.get("type")),
+        "type": post.get("type"),
         "shortCode": post.get("shortCode"),
         "caption": post.get("caption"),
         "hashtags": hashtags,
@@ -146,4 +147,4 @@ if __name__ == "__main__":
     #print (instagram_handles)
     #if instagram_handles:
     #convert_json_to_csv(['josephinecroft'], '/home/wesgelpi/Downloads/instagram_scrape_results_josephinecroft_2024-05-29.csv')
-    print('Completed...')
+    print('Completed manual run...')

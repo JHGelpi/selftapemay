@@ -1,15 +1,8 @@
-# data_processor.py
+"""
+data_processor.py
 
-# Functions to process the raw data from Apify.
-# Filter posts by video/reel type, date range, and check for duplicates.
-# Tasks left to do:
-    # - Filter out posts that were already uploaded to BigQuery
-'''UPDATE FROM 3.7.2024:
-
-I have been successful in downloading from Google BigQuery and uploading/appending a file back
-to BigQuery.  However, the results are not filtering our appropriately so I need to look at
-how the filter in the dataframe is actually filtering out already known values in the
-id column of tbleInstagramData'''
+Functions to process the raw data from Apify. Filter posts by video/reel type, date range, and check for duplicates.
+"""
 
 import csv
 import ast
@@ -18,12 +11,31 @@ from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
 from datetime import datetime
 import pytz
-# Function to parse the date string
+
 def parse_date(date_str):
-    #return datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=pytz.UTC)
+    """
+    Parse the date string to a datetime object with UTC timezone.
+
+    Args:
+        date_str (str): Date string to parse.
+
+    Returns:
+        datetime: Parsed datetime object with UTC timezone.
+    """
     return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=pytz.UTC)
 
 def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
+    """
+    Process the input CSV file, filter the data, and save the differences to a new CSV file.
+
+    Args:
+        input_file_path (str): Path to the input CSV file.
+        selftapemay_hashtag (list): List of hashtags for self-tape may campaign.
+        campaign_hashtag (list): List of hashtags for the specific campaign.
+
+    Returns:
+        str: Path to the CSV file containing the differences.
+    """
     # Initialize an empty DataFrame for diffs_df with the same columns as in your CSV
     diffs_df = pd.DataFrame(columns=['id', 'ownerFullName', 'ownerUsername', 'type', 'url', 'hashtags', 'timestamp', 'productType', 'hashtag_0', 'hashtag_1', 'campaignFlag', '_id', '_createdDate', '_updatedDate', '_owner'])
 
@@ -45,7 +57,6 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
         except (ValueError, SyntaxError):
             return []
     
-    #safe_eval = lambda x: ast.literal_eval(x) if pd.notna(x) else []
     df['hashtags_list'] = df['hashtags'].apply(safe_eval)
 
     # Convert 'timestamp' column to datetime
@@ -53,7 +64,6 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     # Define start and end of the date range
     utc = pytz.UTC
-
     start_end_date_file = '/home/wesgelpi/self_tape_may/start_end_dates.txt'
     with open(start_end_date_file, 'r') as file:
         lines = file.readlines()
@@ -66,35 +76,17 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
             end_date_str = line.split(": ")[1].strip()  # Extract the date string
             end_date = parse_date(end_date_str)
 
-    #start_date = utc.localize(datetime(2024, 5, 1, 0, 0, 0))
-    #start_date = utc.localize(start_date)
-    #print (start_date)
-
-    #end_date = utc.localize(datetime(2024, 5, 31, 23, 59, 59))
-    #end_date = utc.localize(end_date)
-    #print (end_date)
-
     # Filter df for posts within the specified date range
     filtered_df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
 
     # Filter based on selftapemay_hashtag and campaign_hashtag
-    #df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
-    #df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    #filtered_df['selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in x)
-    #filtered_df['campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in x)
-    # Instead of directly assigning values to filtered_df, use .loc to modify it
-
-    #filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(lambda x: selftapemay_hashtag.lower() in map(str.lower, x))
-    filtered_df.loc[:, 'selftapemayFlag'] = df['hashtags_list'].apply(
-    lambda x: any(hashtag.lower() in map(str.lower, x) for hashtag in selftapemay_hashtag)
+    filtered_df.loc[:, 'selftapemayFlag'] = filtered_df['hashtags_list'].apply(
+        lambda x: any(hashtag.lower() in map(str.lower, x) for hashtag in selftapemay_hashtag)
+    )
+    filtered_df.loc[:, 'campaignFlag'] = filtered_df['hashtags_list'].apply(
+        lambda x: any(campaign.lower() in map(str.lower, x) for campaign in campaign_hashtag)
     )
 
-    #filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(lambda x: campaign_hashtag.lower() in map(str.lower, x))
-    filtered_df.loc[:, 'campaignFlag'] = df['hashtags_list'].apply(
-    lambda x: any(campaign.lower() in map(str.lower, x) for campaign in campaign_hashtag)
-    )
-
-    # filtered_df = df[df['selftapemayFlag']]
     filtered_df = filtered_df[filtered_df['selftapemayFlag']]
 
     # Export to CSV file - This is a validation step that should be omitted from final solution
@@ -105,42 +97,14 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     # Step 2: Download BigQuery data and convert to DataFrame
     project_id = 'self-tape-may'
     client = bigquery.Client(project=project_id)
-    #client = bigquery.Client()
     query = "SELECT * FROM `self-tape-may.self_tape_may_data.tblInstagramData`"
     bq_df = client.query(query).to_dataframe()
-
-    ## Export to CSV file - This is a validation step that should be omitted from final solution
-    #formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    #bigquery_output_path = f"/home/wesgelpi/Downloads/instagram_BigQuery_{formatted_now}.csv"
-    #bq_df.to_csv(bigquery_output_path, index=False)
 
     # Ensure 'id' column is string and trim whitespace in both DataFrames
     filtered_df['id'] = filtered_df['id'].astype(str).str.strip()
     bq_df['id'] = bq_df['id'].astype(str).str.strip()
 
-    # Step 3: Compare and generate diffs (Existing logic)
-    existing_ids = set(bq_df['id'])
-    diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
-
-    # Before saving, adjust diffs_df to match the schema exactly
-    # Ensure all required fields are present or add them with default values
-    diffs_df = diffs_df.assign(
-        id=pd.NA,
-        ownerFullName=pd.NA,
-        ownerUsername=pd.NA,
-        type=pd.NA,
-        url=pd.NA,
-        hashtags=pd.NA,
-        timestamp=pd.NA,
-        productType=pd.NA,
-        hashtag_0=pd.NA,
-        hashtag_1=pd.NA,
-        campaignFlag=lambda x: x['campaignFlag'].astype(str),
-        _id=pd.NA,
-        _createdDate=pd.NA,
-        _updatedDate=pd.NA,
-        _owner=pd.NA,
-    )
+    # Step 3: Compare and generate diffs
     existing_ids = set(bq_df['id'])
     diffs_df = filtered_df[~filtered_df['id'].isin(existing_ids)]
 
@@ -170,7 +134,6 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
     diffs_df = diffs_df[schema_order]
 
     # Save diffs to CSV
-    formatted_now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     diffs_output_path = f"/home/wesgelpi/Downloads/instagram_diffs_{formatted_now}.csv"
     diffs_df.to_csv(diffs_output_path, index=False)
     print(f"Diffs file saved as: {diffs_output_path}")
@@ -180,19 +143,18 @@ def process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag):
 
     return diffs_output_path
 
-# Step 4: Append new data to BigQuery is handled outside this script
 def append_to_bigquery(csv_file_path, dataset_table):
+    """
+    Append new data to BigQuery table.
+
+    Args:
+        csv_file_path (str): Path to the CSV file containing new data.
+        dataset_table (str): BigQuery dataset and table to append the data.
+    """
     project_id = 'self-tape-may'
     client = bigquery.Client(project=project_id)
-    #client = bigquery.Client()
     table_id = dataset_table
 
-    '''job_config = bigquery.LoadJobConfig(
-        source_format=bigquery.SourceFormat.CSV,
-        skip_leading_rows=1,  # Skip the header row.
-        autodetect=True,  # Autodetect schema and options.
-        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)  # Append to existing table.'''
-    # Explicitly define the schema to match your BigQuery table's schema
     job_config = bigquery.LoadJobConfig(
         schema=[
             SchemaField("id", "STRING"),
@@ -213,7 +175,8 @@ def append_to_bigquery(csv_file_path, dataset_table):
         ],
         source_format=bigquery.SourceFormat.CSV,
         skip_leading_rows=1,
-        write_disposition=bigquery.WriteDisposition.WRITE_APPEND)
+        write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+    )
     
     with open(csv_file_path, "rb") as source_file:
         load_job = client.load_table_from_file(source_file, table_id, job_config=job_config)
@@ -222,26 +185,24 @@ def append_to_bigquery(csv_file_path, dataset_table):
 
     print(f"Appended data to {table_id} from {csv_file_path}. Job ID: {load_job.job_id}")
 
-    # Call the function with your specific parameters
-    #project_id = 'your-project-id'  # Google Cloud project ID
-    #dataset_id = 'self-tape-may'  # Dataset ID
-    dataset_table = 'self-tape-may.self_tape_may_data.tblActivityLog'  # Table ID
-    activity_message = "Processed CSV and updated diffs."  # Example log message
-
-    # Call the function at the end of the processing or wherever appropriate
-    append_activity_log(dataset_table, activity_message)
+    activity_message = "Processed CSV and updated diffs."
+    append_activity_log('self-tape-may.self_tape_may_data.tblActivityLog', activity_message)
 
 def append_activity_log(dataset_table, activity_message):
+    """
+    Append an activity log entry to the BigQuery table.
+
+    Args:
+        dataset_table (str): BigQuery dataset and table to append the activity log.
+        activity_message (str): Activity message to log.
+    """
     project_id = 'self-tape-may'
     client = bigquery.Client(project=project_id)
-    #client = bigquery.Client()
 
-    # Define the table you want to append to
     table_ref = dataset_table
     table = client.get_table(table_ref)  # Make an API request to fetch the table
 
     # Prepare the row to insert
-    # Assuming the table has columns for a timestamp and a message
     utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)  # Current timestamp in UTC
     rows_to_insert = [
         {"activityType" : 'updateData', "activityDTTM": utc_now.isoformat(), "activityDescription": activity_message},
@@ -251,16 +212,4 @@ def append_activity_log(dataset_table, activity_message):
     errors = client.insert_rows_json(table, rows_to_insert)  # Make an API request
     if errors == []:
         print("New rows have been added.")
-    else:
-        print("Encountered errors while inserting rows: {}".format(errors))
-
-'''
-# Example usage
-selftapemay_hashtag = 'selftapemay'
-campaign_hashtag = 'asmr'  # Replace with your actual campaign hashtag
-#processed_file_path = process_csv(csv_file_path, campaign_hashtag)
-input_file_path = '/home/wesgelpi/Downloads/instagram_scrape_results_2024-03-04_21-28-23.csv'  # Update the path
-
-processed_file_path = process_csv(input_file_path, selftapemay_hashtag, campaign_hashtag)
-print(f"Processed file saved as: {processed_file_path}")
-'''
+   

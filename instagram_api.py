@@ -2,10 +2,6 @@ import requests
 import json
 import logging
 
-# Configure logging to write to a file
-#config_data = get_config_data
-log_file_path = get_config_data()[12]  # Assuming the log file path is provided as a list, extract the first element
-logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
 
 def get_config_data():
     """
@@ -148,6 +144,12 @@ def get_recent_media_for_hashtag(hashtag_id, user_id, access_token, api_version=
         logging.error(f"Error getting recent media: {response.status_code}, {response.text}")
 
 if __name__ == "__main__":
+
+    # Configure logging to write to a file
+    #config_data = get_config_data
+    log_file_path = get_config_data()[12]  # Assuming the log file path is provided as a list, extract the first element
+    logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
+
     logging.debug("Starting main program to interact with Instagram API.")
     # Step 1: Get User Access Token
     access_token = get_user_access_token()

@@ -4,7 +4,7 @@ from instagram_api import get_config_data
 
 # Configure logging to write to a file
 config_data = get_config_data()
-log_file_path = config_data[12][0]  # Assuming the log file path is provided as a list, extract the first element
+log_file_path = config_data[12]  # Assuming the log file path is provided as a list, extract the first element
 logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
 
 def get_long_lived_access_token(app_id, app_secret, short_lived_token):

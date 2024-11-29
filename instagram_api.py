@@ -1,7 +1,7 @@
 import requests
 import json
 import logging
-
+import datetime
 
 def get_config_data():
     """
@@ -13,36 +13,67 @@ def get_config_data():
     CONFIG_FILE = "config.json"
 
     logging.debug("Loading configuration data from the config file.")
-    with open(CONFIG_FILE_PATH + CONFIG_FILE, 'r') as file:
-        config = json.load(file)
-        FILE_PATH = config['secrets_folder'][0]
+    try:
+        with open(CONFIG_FILE_PATH + CONFIG_FILE, 'r') as file:
+            config = json.load(file)
+            FILE_PATH = config['secrets_folder'][0]
 
-        # Extract configuration details from JSON
-        USER_SHORT_TOKEN_FILE = config['user_short_token_file'][0] # facebook/FBUserShortOAuthToken.txt - Obtained with the flask app
-        USER_LONG_TOKEN_FILE = config['user_long_token_file'][0] # facebook/FBUserLongOAuthToken.txt
-        APP_ID_FILE = config['app_id_file'][0] # 'facebookAppID.txt'
-        APP_TOKEN_FILE = config['app_token_file'][0] # 'facebookAppsecret.txt'
-        API_VERSION = config['api_version'][0] # 'v21.0'
-        USER_ID = config['bus_acct_userID'][0] # 'wgelpi'
-        HASHTAG = config['hashtag'][0] # 'coke'
-        CALLBACK_URI = config['callback_uri'][0] # ''
-        API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
-        LOG_FILE = config['logging_file'][0]
+            # Extract configuration details from JSON
+            USER_SHORT_TOKEN_FILE = config['user_short_token_file'][0] # facebook/FBUserShortOAuthToken.txt - Obtained with the flask app
+            USER_LONG_TOKEN_FILE = config['user_long_token_file'][0] # facebook/FBUserLongOAuthToken.txt
+            APP_ID_FILE = config['app_id_file'][0] # 'facebookAppID.txt'
+            APP_TOKEN_FILE = config['app_token_file'][0] # 'facebookAppsecret.txt'
+            API_VERSION = config['api_version'][0] # 'v21.0'
+            USER_ID = config['bus_acct_userID'][0] # 'wgelpi'
+            HASHTAG = config['hashtag'][0] # 'coke'
+            CALLBACK_URI = config['callback_uri'][0] # ''
+            API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
+            LOG_FILE = config['logging_file'][0]
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logging.error(f"Error loading configuration file: {e}")
+        raise
 
     # Get Instagram secrets
     logging.debug("Reading Instagram secrets from files.")
-    with open(FILE_PATH + APP_TOKEN_FILE, 'r') as file:
-        APP_TOKEN = file.read().strip()
+    try:
+        with open(FILE_PATH + APP_TOKEN_FILE, 'r') as file:
+            APP_TOKEN = file.read().strip()
 
-    with open(FILE_PATH + APP_ID_FILE, 'r') as file:
-        APP_ID = file.read().strip()
+        with open(FILE_PATH + APP_ID_FILE, 'r') as file:
+            APP_ID = file.read().strip()
 
-    with open(FILE_PATH + USER_SHORT_TOKEN_FILE, 'r') as file:
-        USER_SHORT_TOKEN = file.read().strip()
-    with open(FILE_PATH + USER_LONG_TOKEN_FILE, 'r') as file:
-        USER_LONG_TOKEN = file.read().strip()
+        with open(FILE_PATH + USER_SHORT_TOKEN_FILE, 'r') as file:
+            USER_SHORT_TOKEN = file.read().strip()
+        with open(FILE_PATH + USER_LONG_TOKEN_FILE, 'r') as file:
+            USER_LONG_TOKEN = file.read().strip()
+    except FileNotFoundError as e:
+        logging.error(f"Error reading Instagram secrets: {e}")
+        raise
 
     return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE
+
+def configure_logging():
+    """
+    Configure logging to write to a file and to the console.
+    """
+    config_data = get_config_data()
+    log_file_base = config_data[12]
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file_path = f"{log_file_base}{__file__.split('/')[-1].replace('.py', '')}_log_{timestamp}.log"
+
+    logging.basicConfig(
+        filename=log_file_path,
+        filemode='w',
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s'
+    )
+
+    # Adding a stream handler to also log to console
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(console_formatter)
+    logging.getLogger().addHandler(console_handler)
 
 def get_user_access_token():
     """
@@ -72,7 +103,7 @@ def get_instagram_business_user_id(access_token):
 
     if response.status_code == 200:
         accounts_data = response.json().get('data', [])
-        if accounts_data:
+        if len(accounts_data) > 0:
             return accounts_data[0]['id']
         else:
             logging.error("No linked Instagram accounts found.")
@@ -144,18 +175,24 @@ def get_recent_media_for_hashtag(hashtag_id, user_id, access_token, api_version=
         logging.error(f"Error getting recent media: {response.status_code}, {response.text}")
 
 if __name__ == "__main__":
-
-    # Configure logging to write to a file
-    #config_data = get_config_data
-    log_file_path = get_config_data()[12]  # Assuming the log file path is provided as a list, extract the first element
-    logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
+    # Configure logging
+    configure_logging()
 
     logging.debug("Starting main program to interact with Instagram API.")
+    
     # Step 1: Get User Access Token
-    access_token = get_user_access_token()
+    try:
+        access_token = get_user_access_token()
+    except Exception as e:
+        logging.error(f"Error retrieving user access token: {e}")
+        raise
 
     # Step 2: Define User ID and Hashtag
-    user_id = get_instagram_business_user_id(access_token)
+    try:
+        user_id = get_instagram_business_user_id(access_token)
+    except Exception as e:
+        logging.error(f"Error retrieving Instagram Business User ID: {e}")
+        raise
     
     if not user_id:
         logging.error("Instagram Business Account User ID not found.")
@@ -163,10 +200,18 @@ if __name__ == "__main__":
         hashtag = get_config_data()[4]
 
         # Step 3: Search for Hashtag ID
-        hashtag_id = search_hashtag(hashtag, user_id, access_token, api_version=get_config_data()[5])
+        try:
+            hashtag_id = search_hashtag(hashtag, user_id, access_token, api_version=get_config_data()[5])
+        except Exception as e:
+            logging.error(f"Error searching for hashtag ID: {e}")
+            raise
 
         if hashtag_id:
             # Step 4: Get Recent Media for Hashtag
-            get_recent_media_for_hashtag(hashtag_id, user_id, access_token)
+            try:
+                get_recent_media_for_hashtag(hashtag_id, user_id, access_token)
+            except Exception as e:
+                logging.error(f"Error getting recent media for hashtag: {e}")
+                raise
         else:
             logging.error("Unable to find the hashtag ID.")

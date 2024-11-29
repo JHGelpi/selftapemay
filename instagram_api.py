@@ -15,14 +15,15 @@ def get_config_data():
         FILE_PATH = config['secrets_folder'][0]
 
         # Extract configuration details from JSON
-        USER_TOKEN_FILE = config['user_token_file'][0]
-        APP_ID_FILE = config['app_id_file'][0]
-        APP_TOKEN_FILE = config['app_token_file'][0]
-        API_VERSION = config['api_version'][0]
-        USER_ID = config['bus_acct_userID'][0]
-        HASHTAG = config['hashtag'][0]
-        CALLBACK_URI = config['callback_uri'][0]
-        API_SCOPE = config['scopes'][0]
+        USER_SHORT_TOKEN_FILE = config['user_short_token_file'][0] # facebook/FBUserShortOAuthToken.txt - Obtained with the flask app
+        USER_LONG_TOKEN_FILE = config['user_long_token_file'][0] # facebook/FBUserLongOAuthToken.txt
+        APP_ID_FILE = config['app_id_file'][0] # 'facebookAppID.txt'
+        APP_TOKEN_FILE = config['app_token_file'][0] # 'facebookAppsecret.txt'
+        API_VERSION = config['api_version'][0] # 'v21.0'
+        USER_ID = config['bus_acct_userID'][0] # 'wgelpi'
+        HASHTAG = config['hashtag'][0] # 'coke'
+        CALLBACK_URI = config['callback_uri'][0] # ''
+        API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
 
     # Get Instagram secrets
     with open(FILE_PATH + APP_TOKEN_FILE, 'r') as file:
@@ -31,10 +32,12 @@ def get_config_data():
     with open(FILE_PATH + APP_ID_FILE, 'r') as file:
         APP_ID = file.read().strip()
 
-    with open(FILE_PATH + USER_TOKEN_FILE, 'r') as file:
-        USER_TOKEN = file.read().strip()
+    with open(FILE_PATH + USER_SHORT_TOKEN_FILE, 'r') as file:
+        USER_SHORT_TOKEN = file.read().strip()
+    with open(FILE_PATH + USER_LONG_TOKEN_FILE, 'r') as file:
+        USER_LONG_TOKEN = file.read().strip()
 
-    return APP_TOKEN, APP_ID, USER_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE
+    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE
 
 def get_user_access_token():
     """
@@ -42,7 +45,7 @@ def get_user_access_token():
     
     :return: The User Access Token.
     """
-    return get_config_data()[2]
+    return get_config_data()[8] # USER_LONG_TOKEN which is in facebook/FBUserLongOAuthToken.txt
 
 def get_instagram_business_user_id(access_token):
     """
@@ -51,10 +54,10 @@ def get_instagram_business_user_id(access_token):
     :param access_token: The User Access Token.
     :return: Instagram Business Account User ID or None if not found.
     """
-    api_version = get_config_data()[5]
+    api_version = get_config_data()[5] # API_VERSION
     url = f'https://graph.facebook.com/{api_version}/me/accounts'
     params = {
-        'access_token': access_token
+        'access_token': access_token # This needs to be the long lived access token
     }
 
     response = requests.get(url, params=params)
@@ -135,6 +138,8 @@ if __name__ == "__main__":
 
     # Step 2: Define User ID and Hashtag
     user_id = get_instagram_business_user_id(access_token)
+    #user_id = get_config_data()[3] # Returning the Instagram Business User ID
+    
     if not user_id:
         print("Instagram Business Account User ID not found.")
     else:

@@ -1,5 +1,11 @@
 import requests
 import json
+import logging
+
+# Configure logging to write to a file
+#config_data = get_config_data
+log_file_path = get_config_data()[12]  # Assuming the log file path is provided as a list, extract the first element
+logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
 
 def get_config_data():
     """
@@ -10,6 +16,7 @@ def get_config_data():
     CONFIG_FILE_PATH = "/home/wesgelpi/self_tape_may/"
     CONFIG_FILE = "config.json"
 
+    logging.debug("Loading configuration data from the config file.")
     with open(CONFIG_FILE_PATH + CONFIG_FILE, 'r') as file:
         config = json.load(file)
         FILE_PATH = config['secrets_folder'][0]
@@ -24,8 +31,10 @@ def get_config_data():
         HASHTAG = config['hashtag'][0] # 'coke'
         CALLBACK_URI = config['callback_uri'][0] # ''
         API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
+        LOG_FILE = config['logging_file'][0]
 
     # Get Instagram secrets
+    logging.debug("Reading Instagram secrets from files.")
     with open(FILE_PATH + APP_TOKEN_FILE, 'r') as file:
         APP_TOKEN = file.read().strip()
 
@@ -37,7 +46,7 @@ def get_config_data():
     with open(FILE_PATH + USER_LONG_TOKEN_FILE, 'r') as file:
         USER_LONG_TOKEN = file.read().strip()
 
-    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE
+    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE
 
 def get_user_access_token():
     """
@@ -45,6 +54,7 @@ def get_user_access_token():
     
     :return: The User Access Token.
     """
+    logging.debug("Retrieving user access token from configuration data.")
     return get_config_data()[8] # USER_LONG_TOKEN which is in facebook/FBUserLongOAuthToken.txt
 
 def get_instagram_business_user_id(access_token):
@@ -57,20 +67,21 @@ def get_instagram_business_user_id(access_token):
     api_version = get_config_data()[5] # API_VERSION
     url = f'https://graph.facebook.com/{api_version}/me/accounts'
     params = {
-        'access_token': access_token # This needs to be the long lived access token
+        'access_token': access_token # This needs to be the long-lived access token
     }
 
+    logging.debug(f"Making request to get Instagram Business User ID with URL: {url} and params: {params}")
     response = requests.get(url, params=params)
+    logging.debug(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
 
     if response.status_code == 200:
         accounts_data = response.json().get('data', [])
         if accounts_data:
-            # Assuming you have only one Instagram Business account linked
             return accounts_data[0]['id']
         else:
-            print("No linked Instagram accounts found.")
+            logging.error("No linked Instagram accounts found.")
     else:
-        print(f"Error retrieving accounts: {response.status_code}, {response.text}")
+        logging.error(f"Error retrieving accounts: {response.status_code}, {response.text}")
 
     return None
 
@@ -91,16 +102,18 @@ def search_hashtag(hashtag, user_id, access_token, api_version):
         'access_token': access_token
     }
 
+    logging.debug(f"Searching for hashtag with URL: {hashtag_search_url} and params: {params}")
     response = requests.get(hashtag_search_url, params=params)
+    logging.debug(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
 
     if response.status_code == 200:
         hashtag_data = response.json().get('data', [])
         if hashtag_data:
             return hashtag_data[0]['id']
         else:
-            print("Hashtag not found.")
+            logging.error("Hashtag not found.")
     else:
-        print(f"Error searching hashtag: {response.status_code}, {response.text}")
+        logging.error(f"Error searching hashtag: {response.status_code}, {response.text}")
 
     return None
 
@@ -120,28 +133,30 @@ def get_recent_media_for_hashtag(hashtag_id, user_id, access_token, api_version=
         'access_token': access_token
     }
 
+    logging.debug(f"Getting recent media for hashtag with URL: {recent_media_url} and params: {params}")
     response = requests.get(recent_media_url, params=params)
+    logging.debug(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
 
     if response.status_code == 200:
         media_data = response.json().get('data', [])
         if media_data:
             for media in media_data:
-                print(f"Media ID: {media['id']}, Type: {media['media_type']}, Caption: {media.get('caption')}, Link: {media.get('permalink')}")
+                logging.info(f"Media ID: {media['id']}, Type: {media['media_type']}, Caption: {media.get('caption')}, Link: {media.get('permalink')}")
         else:
-            print("No media found for this hashtag.")
+            logging.error("No media found for this hashtag.")
     else:
-        print(f"Error getting recent media: {response.status_code}, {response.text}")
+        logging.error(f"Error getting recent media: {response.status_code}, {response.text}")
 
 if __name__ == "__main__":
+    logging.debug("Starting main program to interact with Instagram API.")
     # Step 1: Get User Access Token
     access_token = get_user_access_token()
 
     # Step 2: Define User ID and Hashtag
     user_id = get_instagram_business_user_id(access_token)
-    #user_id = get_config_data()[3] # Returning the Instagram Business User ID
     
     if not user_id:
-        print("Instagram Business Account User ID not found.")
+        logging.error("Instagram Business Account User ID not found.")
     else:
         hashtag = get_config_data()[4]
 
@@ -152,4 +167,4 @@ if __name__ == "__main__":
             # Step 4: Get Recent Media for Hashtag
             get_recent_media_for_hashtag(hashtag_id, user_id, access_token)
         else:
-            print("Unable to find the hashtag ID.")
+            logging.error("Unable to find the hashtag ID.")

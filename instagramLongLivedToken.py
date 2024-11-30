@@ -1,11 +1,32 @@
 import requests
 import logging
+import datetime
+import os
 from instagram_api import get_config_data
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Configure logging to write to a file
-config_data = get_config_data()
-log_file_path = config_data[12]  # Assuming the log file path is provided as a list, extract the first element
-logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
+#config_data = get_config_data()
+
+def requests_retry_session(
+    retries=3,
+    backoff_factor=0.3,
+    status_forcelist=(500, 502, 504),
+    session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
 
 def get_long_lived_access_token(app_id, app_secret, short_lived_token):
     """
@@ -17,7 +38,8 @@ def get_long_lived_access_token(app_id, app_secret, short_lived_token):
     :return: Long-lived access token if successful, otherwise None.
     """
     # Retrieve the API version from configuration data
-    api_version = get_config_data()[5]
+    #api_version = get_config_data()[5]
+    api_version = config_data[5]
     logging.debug(f"API Version: {api_version}")  # Debug log
 
     # Construct the URL for the Facebook Graph API endpoint to exchange the token
@@ -33,18 +55,22 @@ def get_long_lived_access_token(app_id, app_secret, short_lived_token):
     }
     logging.debug(f"Request Parameters: {params}")  # Debug log
 
-    # Make the request to the Facebook Graph API to exchange the token
-    response = requests.get(url, params=params)
-    logging.debug(f"Response Status Code: {response.status_code}")  # Debug log
-    logging.debug(f"Response Content: {response.text}")  # Debug log
+    # Make the request to the Facebook Graph API to exchange the token with retries
+    try:
+        response = requests_retry_session().get(url, params=params)
+        logging.debug(f"Response Status Code: {response.status_code}")  # Debug log
+        logging.debug(f"Response Content: {response.text}")  # Debug log
 
-    # If the request is successful, extract and return the long-lived token
-    if response.status_code == 200:
-        long_lived_token = response.json().get('access_token')
-        logging.debug(f"Long-Lived Access Token: {long_lived_token}")  # Debug log
-        return long_lived_token
-    else:
-        logging.debug("Failed to get long-lived access token.")  # Debug log
+        # If the request is successful, extract and return the long-lived token
+        if response.status_code == 200:
+            long_lived_token = response.json().get('access_token')
+            logging.debug(f"Long-Lived Access Token: {long_lived_token}")  # Debug log
+            return long_lived_token
+        else:
+            logging.debug("Failed to get long-lived access token.")  # Debug log
+            return None
+    except requests.RequestException as e:
+        logging.error(f"Error during request: {e}")
         return None
 
 def save_long_lived_token(FILE_PATH, token):
@@ -62,9 +88,56 @@ def save_long_lived_token(FILE_PATH, token):
     except Exception as e:
         logging.debug(f"Error saving long-lived token: {e}")  # Debug log
 
+def check_and_refresh_token():
+    """
+    Check if the long-lived token needs to be refreshed based on the last refresh date.
+    If more than 50 days have passed since the last refresh, refresh the token.
+    """
+    # Path to the file storing the last refresh date
+    LAST_REFRESH_FILE = config_data[9] + "last_refresh_date.txt"
+    logging.debug(f"Checking last refresh date from: {LAST_REFRESH_FILE}")
+
+    # Determine if the token needs to be refreshed
+    try:
+        if os.path.exists(LAST_REFRESH_FILE):
+            with open(LAST_REFRESH_FILE, 'r') as file:
+                last_refresh_str = file.read().strip()
+                last_refresh_date = datetime.datetime.strptime(last_refresh_str, "%Y-%m-%d")
+                days_since_refresh = (datetime.datetime.now() - last_refresh_date).days
+                logging.debug(f"Days since last token refresh: {days_since_refresh}")
+
+                if days_since_refresh < 50:
+                    logging.info("Token refresh not needed.")
+                    return
+        else:
+            logging.debug("Last refresh date file not found. Proceeding with token refresh.")
+    except Exception as e:
+        logging.error(f"Error reading last refresh date: {e}")
+
+    # Refresh the long-lived token
+    logging.info("Refreshing long-lived token.")
+    long_lived_token = config_data[8]  # Existing long-lived access token
+    app_id = config_data[1]  # Facebook App ID
+    refreshed_token = get_long_lived_access_token(long_lived_token, app_id)
+
+    if refreshed_token:
+        save_long_lived_token(config_data[9] + config_data[11], refreshed_token)
+        # Update the last refresh date
+        try:
+            with open(LAST_REFRESH_FILE, 'w') as file:
+                file.write(datetime.datetime.now().strftime("%Y-%m-%d"))
+            logging.debug(f"Last refresh date updated to: {datetime.datetime.now().strftime('%Y-%m-%d')}")
+        except Exception as e:
+            logging.error(f"Error updating last refresh date: {e}")
+    else:
+        logging.error("Failed to refresh long-lived token.")
+
 if __name__ == "__main__":
     # Load configuration data
     config_data = get_config_data()
+    log_file_path = config_data[12]  # Assuming the log file path is provided as a list, extract the first element
+    logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
+
     logging.debug(f"Configuration Data Loaded: {config_data}")  # Debug log
     
     # Extract app credentials and short-lived token from configuration

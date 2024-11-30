@@ -2,6 +2,7 @@ import requests
 import json
 import logging
 import datetime
+#from instagramLongLivedToken import check_and_refresh_token
 
 def get_config_data():
     """
@@ -178,6 +179,8 @@ if __name__ == "__main__":
     # Configure logging
     configure_logging()
 
+    check_and_refresh_token()
+    
     logging.debug("Starting main program to interact with Instagram API.")
     
     # Step 1: Get User Access Token

@@ -1,7 +1,8 @@
 import logging
 from flask import Flask, request
 import requests
-from instagram_api import get_config_data
+#from instagram_api import get_config_data
+from utils import get_config_data
 
 # Configure logging to write to a file
 config_data = get_config_data()

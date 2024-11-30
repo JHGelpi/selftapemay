@@ -2,7 +2,8 @@ import requests
 import logging
 import datetime
 import os
-from instagram_api import get_config_data
+#from instagram_api import get_config_data
+from utils import get_config_data
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -135,9 +136,20 @@ def check_and_refresh_token():
 if __name__ == "__main__":
     # Load configuration data
     config_data = get_config_data()
-    log_file_path = config_data[12]  # Assuming the log file path is provided as a list, extract the first element
-    logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s')
 
+    # Extract the log file path and ensure it's a string
+    log_file_path = config_data[12] if isinstance(config_data[12], list) else config_data[12]
+    log_file_path = log_file_path + f"instagramLongLivedToken_logs_{datetime.datetime.now().strftime('%y%m%d%H%M%S')}.log"
+    print(f"Log file path: {log_file_path}")  # Print for debugging purposes
+
+    # Configure logging to write to a file
+    logging.basicConfig(
+        filename=log_file_path, 
+        level=logging.DEBUG, 
+        format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s', 
+        filemode='w'
+    )
+    
     logging.debug(f"Configuration Data Loaded: {config_data}")  # Debug log
     
     # Extract app credentials and short-lived token from configuration
@@ -156,5 +168,7 @@ if __name__ == "__main__":
     # If a long-lived token is obtained, save it to the specified file
     if long_lived_token:
         save_long_lived_token(FILE_PATH, long_lived_token)
+        logging.getLogger().handlers[0].flush()  # Force flush
     else:
         logging.debug("No long-lived token obtained.")  # Debug log
+        logging.getLogger().handlers[0].flush()  # Force flush

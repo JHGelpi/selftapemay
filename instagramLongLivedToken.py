@@ -9,6 +9,8 @@ from urllib3.util.retry import Retry
 
 # Configure logging to write to a file
 #config_data = get_config_data()
+# Load configuration data
+config_data = get_config_data()
 
 def requests_retry_session(
     retries=3,
@@ -133,7 +135,7 @@ def check_and_refresh_token():
     else:
         logging.error("Failed to refresh long-lived token.")
 
-if __name__ == "__main__":
+def long_token_main_function():
     # Load configuration data
     config_data = get_config_data()
 
@@ -172,3 +174,6 @@ if __name__ == "__main__":
     else:
         logging.debug("No long-lived token obtained.")  # Debug log
         logging.getLogger().handlers[0].flush()  # Force flush
+
+if __name__ == "__main__":
+    long_token_main_function()

@@ -3,6 +3,7 @@ import json
 import datetime
 import webbrowser
 import requests
+#from instagramLongLivedToken import long_token_main_function
 
 def get_config_data():
     
@@ -27,11 +28,14 @@ def get_config_data():
             APP_ID_FILE = config['app_id_file'][0] # 'facebookAppID.txt'
             APP_TOKEN_FILE = config['app_token_file'][0] # 'facebookAppsecret.txt'
             API_VERSION = config['api_version'][0] # 'v21.0'
-            USER_ID = config['bus_acct_userID'][0] # 'wgelpi'
+            USER_ID = config['bus_acct_userID'][0] # '17841457196827849'
             HASHTAG = config['hashtag'][0] # 'coke'
             CALLBACK_URI = config['callback_uri'][0] # ''
             API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
             LOG_FILE = config['logging_file'][0]
+            PAGE_ID = config['page_id'][0] # '#########'
+            APP_SCOPE_USER_ID = config['app_scoped_user_id'][0] # '#########'
+
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logging.error(f'Error loading configuration file: {e}')
         raise
@@ -53,7 +57,7 @@ def get_config_data():
         logging.error(f'Error reading Instagram secrets: {e}')
         raise
 
-    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE
+    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE, PAGE_ID
 
 def configure_logging():
     
@@ -92,6 +96,73 @@ def getUserShortAccessToken():
     # Open the authorization URL in a browser to let the user grant permissions
     webbrowser.open(auth_url)
 
+def get_page_token(user_access_token, page_id, api_version):
+    # Use the user access token to get the page token for D2I
+    url = f"https://graph.facebook.com/{api_version}/{page_id}"
+    params = {
+        'fields': 'access_token',
+        'access_token': user_access_token
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        page_data = response.json()
+        page_token = page_data.get('access_token')
+        if page_token:
+            print(f"Page Token: {page_token}")
+            return page_token
+        else:
+            print("Page token not found.")
+    else:
+        print(f"Error getting page token: {response.status_code}, {response.text}")
+
+    return None
+
+import requests
+
+def get_pages(user_access_token, api_version):
+    """
+    Retrieve the list of pages the user has access to.
+
+    :param user_access_token: The User Access Token.
+    :param api_version: API version to use.
+    :return: None
+    """
+    # URL to access the /me/accounts endpoint
+    url = f"https://graph.facebook.com/{api_version}/me/accounts"
+    # Parameters with access token
+    params = {
+        'access_token': user_access_token
+    }
+
+    # Make the request to the API
+    response = requests.get(url, params=params)
+    
+    # Log the response status and content for debugging
+    print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
+
+    # If the request is successful, process the pages data
+    if response.status_code == 200:
+        pages_data = response.json().get('data', [])
+        if pages_data:
+            # Iterate through pages and print their details
+            print("Pages found:")
+            for page in pages_data:
+                print(f"Page Name: {page['name']}, Page ID: {page['id']}")
+        else:
+            print("No pages found.")
+    else:
+        # Print error details if the request fails
+        print(f"Error getting pages: {response.status_code}, {response.text}")
+
+# Replace 'YOUR_LONG_LIVED_USER_TOKEN' with your actual long-lived user token
+#user_access_token = "YOUR_LONG_LIVED_USER_TOKEN"
+
+# Execute the function to get pages
+#get_pages(user_access_token)
+
+
 def get_pages_show_list(access_token, api_version):
     """
     Retrieve the list of pages the user has access to.
@@ -119,13 +190,16 @@ def get_pages_show_list(access_token, api_version):
             print("No pages found.")
     else:
         print(f"Error retrieving pages: {response.status_code}, {response.text}")
-        
+
 if __name__ == "__main__":
     config_data = get_config_data()
-    '''
+    
     print("Running process to obtain short access token...")
-    getUserShortAccessToken()
+    #getUserShortAccessToken()
+    #get_page_token(config_data[2], config_data[13], config_data[5])
+    #long_token_main_function()
+    get_pages(config_data[8], config_data[5])
     '''
     print("Running the get_pages_show_list API call")
     get_pages_show_list(config_data[8], config_data[5])
-    
+    '''

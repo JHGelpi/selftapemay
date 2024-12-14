@@ -90,48 +90,45 @@ def hashtag_query():
     the foundational hashtag (#selftapemay)'''
 
     project_id = init_bigquery()
+    config_data = get_config_data()
+    user_id = config_data[3]
+    access_token = config_data[8]
 
     table_ref = 'self-tape-may.self_tape_may_data.tbl_instagram_hashtag_data'
     client = bigquery.Client(project=project_id)
 
     # Query the table to check if the hashtag_id already exists
     query = f"""
-        SELECT COUNT(*) AS count
+        SELECT hashtag_id, COUNT(*) AS count
         FROM `{table_ref}`
-        WHERE hashtag_id = @hashtag_id
+        WHERE hashtag = @hashtag
+        GROUP BY hashtag_id
     """
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
-            bigquery.ScalarQueryParameter("hashtag_id", "STRING", config_data[4]),
+            bigquery.ScalarQueryParameter("hashtag", "STRING", config_data[4]),
         ]
     )
+    
     query_job = client.query(query, job_config=job_config)
-    result = query_job.result()
+    print(f"Executing query: {query}")
+    
+    result_list = list(query_job.result())  # Convert result to a list once
+    count = result_list[0].count if result_list else 0  # Safely check count
 
-    if len(result) == 0:
-        hashtag_id()
+    if count == 0:
+        # If hashtag_id does not exist, call `hashtag_id` function to create it
+        print("Hashtag not found in BigQuery. Creating a new hashtag ID.")
+        hashtagid = hashtag_id()
+        if not hashtagid:  # Check if hashtag_id creation failed
+            print("Error: Failed to create a new hashtag ID.")
+            return None
+    else:
+        print("Hashtag already exists in BigQuery.")
+        hashtagid = result_list[0].hashtag_id  # Fetch the hashtag ID
 
-        # Query the table to check if the hashtag_id already exists
-        query = f"""
-            SELECT COUNT(*) AS count
-            FROM `{table_ref}`
-            WHERE hashtag_id = @hashtag_id
-        """
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ScalarQueryParameter("hashtag_id", "STRING", config_data[4]),
-            ]
-        )
-        query_job = client.query(query, job_config=job_config)
-        result = query_job.result()
-
-    hashtag_id = list(result)[1]  # Fetch the first row
-
-    config_data = get_config_data()
-    user_id = config_data[3]
-    access_token = config_data[8]
     #hashtag_id = ""
-    url = f"https://graph.facebook.com/{hashtag_id}/recent_media"
+    url = f"https://graph.facebook.com/{hashtagid}/recent_media"
 
     params = {
         'user_id': user_id,
@@ -176,5 +173,6 @@ def get_data_and_write_to_gcp():
 if __name__ == "__main__":
     # Configure logging
     configure_logging()
-    hashtag_id()
+    #hashtag_id()
+    hashtag_query()
     #get_data_and_write_to_gcp()

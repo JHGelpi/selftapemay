@@ -9,8 +9,8 @@ def init_bigquery():
     #client = bigquery.Client(project=project_id)
     return project_id
 
-from google.cloud import bigquery
-from datetime import datetime, timezone
+#from google.cloud import bigquery
+#from datetime import datetime, timezone
 
 def hashtag_id():
     '''Function to download ID of hashtags to be used.
@@ -143,7 +143,11 @@ def hashtag_query():
         hashtag_data = response.json().get('data', [])
         if len(hashtag_data) > 0:
             print("Recent post data: ", hashtag_data[0]['id'])
-            return hashtag_data[0]['id']
+            for post in hashtag_data:  # Iterate directly over each dictionary in the list
+                print("Calling post_details for post ID: ", post['id'])
+                post_details(post['id'])  # Call `post_details` with the `id` from the current dictionary
+
+            return hashtag_data[0]['id']  # Return the first hashtag's ID
         else:
             print("Error obtaining hashtag ID.")
     else:
@@ -151,12 +155,93 @@ def hashtag_query():
 
     return None
 
-def post_details():
+def post_details(post_id, childpost=False):
     '''This function will make the API call to obtain the post details for all the
     posts that are provided as a result of the hashtag_query() function.  This function
     should check to see if the post has already been downloaded by querying GCP before
     submitting an API request for post details.  If the post has already been downloaded
     then there is no need to perform another API call.'''
+    # https://graph.facebook.com/v21.0/18111483940430632?fields=id,media_type,media_url,owner,timestamp&access_token=[redacted]
+
+    config_data = get_config_data()
+    #user_id = config_data[3]
+    access_token = config_data[8]
+    api_version = config_data[5]
+    api_fields = ['id','media_type','owner','timestamp', 'shortcode', 'caption']
+    '''
+    I'm going to have to leverage the children endpoint to get child data.  
+    GET /{id-media-id}/children
+    '''
+
+    print ("post_id: ", post_id)
+    url = f'https://graph.facebook.com/{api_version}/{post_id}'
+    
+    params = {
+        'fields': ','.join(api_fields),
+        'access_token': access_token
+    }
+
+    print(f"Making request to get post details with URL: {url} and params: {params}")
+    response = requests.get(url, params=params)
+    print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
+
+    if response.status_code == 200:
+        post_data = response.json()  # Get the full JSON response
+        #if 'data' in post_data and len(post_data['data']) > 0:
+        if post_data:
+            print("Post data: ", post_data)  # Print all data returned in the response
+            
+            if childpost:
+                # don't return to children_posts function
+                return post_data
+            else:
+                children_posts(post_id)
+                return post_data  # Return the entire response JSON
+        else:
+            print("No post details found in the response.")
+    else:
+        print(f"Error retrieving accounts: {response.status_code}, {response.text}")
+
+
+    return None
+
+def children_posts(post_id):
+    '''Use this function to leverage the GET /{id-media-id}/children endpoint
+    to determine if there are any children posts and the values of those children posts
+
+    Logic should be:
+    Does child post exist? Return a Y/N flag of some sort
+    Return the details about the child post (id, media_type, owner, timestamp, hashtags)
+    '''
+    config_data = get_config_data()
+    user_id = config_data[3]
+    access_token = config_data[8]
+    api_version = config_data[5]
+
+    url = f'https://graph.facebook.com/{api_version}/{post_id}/children'
+    params = {
+        'user_id': user_id,
+        'access_token': access_token
+    }
+
+    print(f"Making request to get children with URL: {url} and params: {params}")
+    response = requests.get(url, params=params)
+    print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
+
+    if response.status_code == 200:
+        children = response.json()
+        print("children: ", children)
+        if 'data' in children and len(children['data']) > 0:
+            for post in children['data']:
+                print("Children detected.  Passing results to post_details() ", post)
+                post_details(post, True)
+                
+        else:
+            print("No child posts.")
+
+        return children
+    else:
+        print(f"Error retrieving accounts: {response.status_code}, {response.text}")
 
 def user_details():
     '''This function will simply return the username based on the owner id provided when

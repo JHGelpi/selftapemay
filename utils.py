@@ -158,13 +158,6 @@ def get_pages(user_access_token, api_version):
         # Print error details if the request fails
         print(f"Error getting pages: {response.status_code}, {response.text}")
 
-# Replace 'YOUR_LONG_LIVED_USER_TOKEN' with your actual long-lived user token
-#user_access_token = "YOUR_LONG_LIVED_USER_TOKEN"
-
-# Execute the function to get pages
-#get_pages(user_access_token)
-
-
 def get_pages_show_list(access_token, api_version):
     """
     Retrieve the list of pages the user has access to.
@@ -214,31 +207,14 @@ def extract_hashtags(caption, stmhashtag, campaign_hashtag):
 
     # Check for specific hashtags
     for tag in hashtags:
-        if tag == stmhashtag:
-            foundational_hashtag = tag
-        elif tag == campaign_hashtag:
-            extracted_campaign_hashtag = tag
+        tag_value = tag[1:]  # Remove the '#' symbol
+        if tag_value == stmhashtag:
+            foundational_hashtag = tag_value
+        elif tag_value == campaign_hashtag:
+            extracted_campaign_hashtag = tag_value
 
     return foundational_hashtag, extracted_campaign_hashtag
-'''def format_timestamp(iso_timestamp):
-    """
-    Convert ISO 8601 timestamp (with timezone offset) to 'YYYY-MM-DD HH:MM:SS' format.
-    
-    :param iso_timestamp: The original timestamp from Instagram API (e.g., '2024-12-16T02:27:28+0000')
-    :return: Reformatted timestamp string (e.g., '2024-12-16 02:27:28')
-    """
-    # Parse the timestamp string and ignore the timezone
-    dt = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S%z")
-    # Reformat the timestamp to BigQuery's required format
-    return dt.strftime("%Y-%m-%d %H:%M:%S")'''
-'''def format_timestamp(timestamp):
-    '''"""Format ISO 8601 timestamp to desired format."""'''
-    try:
-        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S%z")
-        return dt.strftime('%Y-%m-%d %H:%M:%S')
-    except Exception as e:
-        print(f"Error formatting timestamp: {e}")
-        return timestamp'''
+
 def format_timestamp(timestamp):
     '''Format ISO 8601 timestamp to BigQuery-compatible format.'''
     from datetime import datetime
@@ -253,11 +229,5 @@ if __name__ == "__main__":
     config_data = get_config_data()
     
     print("Running process to obtain short access token...")
-    #getUserShortAccessToken()
-    #get_page_token(config_data[2], config_data[13], config_data[5])
-    #long_token_main_function()
+
     get_pages(config_data[8], config_data[5])
-    '''
-    print("Running the get_pages_show_list API call")
-    get_pages_show_list(config_data[8], config_data[5])
-    '''

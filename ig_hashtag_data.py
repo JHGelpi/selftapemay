@@ -6,11 +6,7 @@ from datetime import datetime, timezone
 def init_bigquery():
     # Initialize the BigQuery client
     project_id = 'self-tape-may'
-    #client = bigquery.Client(project=project_id)
     return project_id
-
-#from google.cloud import bigquery
-#from datetime import datetime, timezone
 
 def hashtag_id():
     '''Function to download ID of hashtags to be used.
@@ -112,11 +108,7 @@ def hashtag_query():
     
     query_job = client.query(query, job_config=job_config)
     print(f"Executing query: {query}")
-    
-    #result_list = list(query_job.result())  # Convert result to a list once
-    #count = result_list[0].count if result_list else 0  # Safely check count
-    #result_list = list(query_job.result())  # Convert result to a list once
-    #count = result_list[0]['count'] if result_list else 0  # Access 'count' as a dictionary key
+
     result_list = list(query_job.result())  # Convert result to a list once
 
     
@@ -127,8 +119,7 @@ def hashtag_query():
         count = 0
     
     if len(result_list) == 0:
-    #if count == 0:
-        # If hashtag_id does not exist, call `hashtag_id` function to create it
+
         print("Hashtag not found in BigQuery. Creating a new hashtag ID.")
         hashtagid = hashtag_id()
         if not hashtagid:  # Check if hashtag_id creation failed
@@ -138,7 +129,6 @@ def hashtag_query():
         print("Hashtag already exists in BigQuery.")
         hashtagid = result_list[0].hashtag_id  # Fetch the hashtag ID
 
-    #hashtag_id = ""
     url = f"https://graph.facebook.com/{hashtagid}/recent_media"
 
     params = {
@@ -167,11 +157,7 @@ def hashtag_query():
                 )
                 query_job = client.query(query, job_config=job_config)
                 print(f"Executing query: {query}")
-                
-                #result_list = list(query_job.result())  # Convert result to a list once
-                #count = result_list[0].count if result_list else 0  # Safely check count
-                #result_list = list(query_job.result())  # Convert result to a list once
-                #count = result_list[0]['count'] if result_list else 0  # Access 'count' as a dictionary key
+
                 result_list = list(query_job.result())  # Convert result to a list once
 
                 if result_list:
@@ -181,7 +167,6 @@ def hashtag_query():
                     count = 0
 
                 if len(result_list) == 0:
-                #if count == 0:
                     print("Post does not exist.  Calling post_details for post ID: ", post['id'])
                     post_details(post['id'])  # Call `post_details` with the `id` from the current dictionary
                 else:
@@ -195,7 +180,7 @@ def hashtag_query():
 
     return None
 
-def post_details(post_id, childpost=False):
+def post_details(post_id, childpost=False, child_caption=''):
     '''This function will make the API call to obtain the post details for all the
     posts that are provided as a result of the hashtag_query() function.  This function
     should check to see if the post has already been downloaded by querying GCP before
@@ -204,7 +189,6 @@ def post_details(post_id, childpost=False):
     # https://graph.facebook.com/v21.0/18111483940430632?fields=id,media_type,media_url,owner,timestamp&access_token=[redacted]
 
     config_data = get_config_data()
-    #user_id = config_data[3]
     access_token = config_data[8]
     api_version = config_data[5]
     if childpost:
@@ -230,12 +214,9 @@ def post_details(post_id, childpost=False):
 
     if response.status_code == 200:
         post_data = response.json()  # Get the full JSON response
-        #if 'data' in post_data and len(post_data['data']) > 0:
         if post_data:
             print("Post data: ", post_data)  # Print all data returned in the response
-            #post_url = f"https://www.instagram.com/p/{post_data['shortcode']}"
             id = post_data.get('id', '')
-            #owner_id = post_data.get('owner', {})
             owner_id = post_data.get('owner', {}).get('id', '')
             post_url = f"https://www.instagram.com/p/{post_data.get('shortcode', '')}"
             media_type = post_data.get('media_type', '')
@@ -246,19 +227,15 @@ def post_details(post_id, childpost=False):
             if childpost:
                 # don't return to children_posts function
                 print ("Child post data: ", post_data)
-                '''
-                Here is where I need to create a query to append the post data to the BigQuery table tblInstagramData
-                '''
-                get_data_and_write_to_gcp(id, post_url,media_type, formatted_timestamp, owner_id)
+
+                get_data_and_write_to_gcp(id, post_url,media_type, formatted_timestamp, owner_id, child_caption)
                 
                 return post_data
             else:
                 print ("Parent post data: ", post_data)
-                '''
-                Here is where I need to create a query to append the post data to the BigQuery table tblInstagramData
-                '''
+
                 get_data_and_write_to_gcp(id, post_url, media_type, formatted_timestamp, owner_id, caption)
-                children_posts(post_id)
+                children_posts(post_id, caption)
                 return post_data  # Return the entire response JSON
         else:
             print("No post details found in the response.")
@@ -268,7 +245,7 @@ def post_details(post_id, childpost=False):
 
     return None
 
-def children_posts(post_id):
+def children_posts(post_id, caption):
     '''Use this function to leverage the GET /{id-media-id}/children endpoint
     to determine if there are any children posts and the values of those children posts
 
@@ -284,7 +261,6 @@ def children_posts(post_id):
 
     url = f'https://graph.facebook.com/{api_version}/{post_id}/children'
     params = {
-        #'fields': ','.join(api_fields),
         'user_id': user_id,
         'access_token': access_token
     }
@@ -300,7 +276,7 @@ def children_posts(post_id):
             for child in children['data']:
                 print("Children detected: ", child)
                 # Extract the 'id' value from the child and call post_details with it
-                post_details(child['id'], True)
+                post_details(child['id'], True, caption)
                 
         else:
             print("No child posts.")
@@ -313,14 +289,11 @@ def user_details():
     '''This function will simply return the username based on the owner id provided when
     executing the API call in post_details().'''
 
-def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption='', username=''):
+def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption, username=''):
     '''This function will obtain the data necessary (post_details, user_details) and
     then update the necessary GCP tables with the data.  It will also maintain
     the processes necessary to keep data clean and de-duplicated'''
     project_id = init_bigquery()
-    #config_data = get_config_data()
-    #user_id = config_data[3]
-    #access_token = config_data[8]
 
     table_ref = 'self-tape-may.self_tape_may_data.tblInstagramData'
     client = bigquery.Client(project=project_id)
@@ -337,30 +310,29 @@ def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption='', use
 
     # Prepare data for BigQuery (ensure schema compatibility)
     print (f"Preparing data for post_id: {id}")
-    rows_to_insert = [{
-            "id": id,
-            "url": url,
-            "type": type,
-            "timestamp": timestamp,
-            "user_id": user_id,
-            "ownerUsername": username,
-            "hashtags": caption,
-            "hashtag_0": hashtag_0,
-            "hashtag_1": hashtag_1,
-            "campaignFlag": campaign_flag
-        }]
-
-    print(f"Inserting data into BigQuery: {rows_to_insert}")
-    errors = client.insert_rows_json(table_ref, rows_to_insert)  # API call to append rows
-
-    if errors == []:
-        print("Data successfully appended to BigQuery.")
+    if type == "IMAGE":
+        print (f"Not appending post {id} because it is a {type} post.")
     else:
-        print(f"Errors while appending data to BigQuery: {errors}")
-    
-    #hashtag_id = hashtag_id()
-    #print ("Completed using: ", hashtag_id)
-    #hashtag_query(hashtag_id())
+        rows_to_insert = [{
+                "id": id,
+                "url": url,
+                "type": type,
+                "timestamp": timestamp,
+                "user_id": user_id,
+                "ownerUsername": username,
+                "hashtags": caption,
+                "hashtag_0": hashtag_0,
+                "hashtag_1": hashtag_1,
+                "campaignFlag": campaign_flag
+            }]
+
+        print(f"Inserting data into BigQuery: {rows_to_insert}")
+        errors = client.insert_rows_json(table_ref, rows_to_insert)  # API call to append rows
+
+        if errors == []:
+            print("Data successfully appended to BigQuery.")
+        else:
+            print(f"Errors while appending data to BigQuery: {errors}")
 
 if __name__ == "__main__":
     # Configure logging

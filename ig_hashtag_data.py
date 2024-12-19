@@ -180,7 +180,7 @@ def hashtag_query():
 
     return None
 
-def post_details(post_id, childpost=False, child_caption=''):
+def post_details(post_id, childpost=False, child_caption='', parent_id = ''):
     '''This function will make the API call to obtain the post details for all the
     posts that are provided as a result of the hashtag_query() function.  This function
     should check to see if the post has already been downloaded by querying GCP before
@@ -228,14 +228,14 @@ def post_details(post_id, childpost=False, child_caption=''):
                 # don't return to children_posts function
                 print ("Child post data: ", post_data)
 
-                get_data_and_write_to_gcp(id, post_url,media_type, formatted_timestamp, owner_id, child_caption)
+                get_data_and_write_to_gcp(id, post_url,media_type, formatted_timestamp, owner_id, child_caption, parent_id)
                 
                 return post_data
             else:
                 print ("Parent post data: ", post_data)
 
                 get_data_and_write_to_gcp(id, post_url, media_type, formatted_timestamp, owner_id, caption)
-                children_posts(post_id, caption)
+                children_posts(post_id, caption, id)
                 return post_data  # Return the entire response JSON
         else:
             print("No post details found in the response.")
@@ -245,7 +245,7 @@ def post_details(post_id, childpost=False, child_caption=''):
 
     return None
 
-def children_posts(post_id, caption):
+def children_posts(post_id, caption, parent_id):
     '''Use this function to leverage the GET /{id-media-id}/children endpoint
     to determine if there are any children posts and the values of those children posts
 
@@ -276,7 +276,7 @@ def children_posts(post_id, caption):
             for child in children['data']:
                 print("Children detected: ", child)
                 # Extract the 'id' value from the child and call post_details with it
-                post_details(child['id'], True, caption)
+                post_details(child['id'], True, caption, parent_id)
                 
         else:
             print("No child posts.")
@@ -285,14 +285,52 @@ def children_posts(post_id, caption):
     else:
         print(f"Error retrieving accounts: {response.status_code}, {response.text}")
 
-def user_details():
-    '''This function will simply return the username based on the owner id provided when
-    executing the API call in post_details().'''
+def user_details(user_id):
+    '''
+    This function will simply return the username based on the owner id provided when
+    executing the API call in post_details().
 
-def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption, username=''):
-    '''This function will obtain the data necessary (post_details, user_details) and
+    https://graph.facebook.com/v21.0/17841457196827849?fields=username, id&access_token=[redacted]
+    '''
+
+    config_data = get_config_data()
+    api_version = config_data[5]
+    api_fields = ['id','username']
+    access_token = config_data[8]
+    url = f"https://graph.facebook.com/{api_version}/{user_id}"
+    params = {
+        'user_id': user_id,
+        'fields': ','.join(api_fields),
+        'access_token': access_token
+    }
+    
+    print(f"Making request to get username with URL: {url}")
+    response = requests.get(url, params=params)
+    print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
+
+    if response.status_code == 200:
+        try:
+            username = response.json().get('username')
+            if username:
+                print(f"Username obtained: {username}")
+                return username
+            else:
+                print("Username field not found in response.")
+                return None
+        except Exception as e:
+            print(f"Error processing response JSON: {e}")
+            return None
+    else:
+        print("Unable to retrieve username.")
+        print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
+        return None
+
+def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption, username=None, parent_id=None):
+    '''
+    This function will obtain the data necessary (post_details, user_details) and
     then update the necessary GCP tables with the data.  It will also maintain
-    the processes necessary to keep data clean and de-duplicated'''
+    the processes necessary to keep data clean and de-duplicated
+    '''
     project_id = init_bigquery()
 
     table_ref = 'self-tape-may.self_tape_may_data.tblInstagramData'
@@ -308,6 +346,13 @@ def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption, userna
     else:
         campaign_flag = True
 
+    '''
+    Obtain username from user_details function
+    '''
+    print (f"Getting Instagram username with id {user_id}")
+    username = user_details(user_id)
+    #username = ig_username['username']
+    print (f"Username {username} obtained.")
     # Prepare data for BigQuery (ensure schema compatibility)
     print (f"Preparing data for post_id: {id}")
     if type == "IMAGE":
@@ -323,7 +368,8 @@ def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption, userna
                 "hashtags": caption,
                 "hashtag_0": hashtag_0,
                 "hashtag_1": hashtag_1,
-                "campaignFlag": campaign_flag
+                "campaignFlag": campaign_flag,
+                "parent_id": parent_id
             }]
 
         print(f"Inserting data into BigQuery: {rows_to_insert}")

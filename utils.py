@@ -3,6 +3,7 @@ import json
 import datetime
 import webbrowser
 import requests
+import re
 #from instagramLongLivedToken import long_token_main_function
 
 def get_config_data():
@@ -30,6 +31,7 @@ def get_config_data():
             API_VERSION = config['api_version'][0] # 'v21.0'
             USER_ID = config['bus_acct_userID'][0] # '17841457196827849'
             HASHTAG = config['hashtag'][0] # 'coke'
+            CAMPAIGN_HASHTAG = config['campaign_hashtag'][0]
             CALLBACK_URI = config['callback_uri'][0] # ''
             API_SCOPE = config['scopes'] # 'instagram_basic,instagram_manage_insights,pages_show_list'
             LOG_FILE = config['logging_file'][0]
@@ -57,7 +59,7 @@ def get_config_data():
         logging.error(f'Error reading Instagram secrets: {e}')
         raise
 
-    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE, PAGE_ID
+    return APP_TOKEN, APP_ID, USER_SHORT_TOKEN, USER_ID, HASHTAG, API_VERSION, CALLBACK_URI, API_SCOPE, USER_LONG_TOKEN, FILE_PATH, USER_SHORT_TOKEN_FILE, USER_LONG_TOKEN_FILE, LOG_FILE, PAGE_ID, CAMPAIGN_HASHTAG
 
 def configure_logging():
     
@@ -191,6 +193,62 @@ def get_pages_show_list(access_token, api_version):
     else:
         print(f"Error retrieving pages: {response.status_code}, {response.text}")
 
+def extract_hashtags(caption, stmhashtag, campaign_hashtag):
+    '''
+    Extract foundational and campaign hashtags from a given caption.
+
+    :param caption: The text caption of the Instagram post.
+    :param campaign_hashtag: The campaign hashtag from the configuration.
+    :return: A tuple of (foundational_hashtag, campaign_hashtag) or (None, None) if not found.
+    '''
+    if not caption:
+        print("Caption is empty. No hashtags to extract.")
+        return None, None
+
+    # Find all hashtags in the caption
+    hashtags = re.findall(r"#\w+", caption)
+    print(f"Extracted hashtags: {hashtags}")
+
+    foundational_hashtag = None
+    extracted_campaign_hashtag = None
+
+    # Check for specific hashtags
+    for tag in hashtags:
+        if tag == stmhashtag:
+            foundational_hashtag = tag
+        elif tag == campaign_hashtag:
+            extracted_campaign_hashtag = tag
+
+    return foundational_hashtag, extracted_campaign_hashtag
+'''def format_timestamp(iso_timestamp):
+    """
+    Convert ISO 8601 timestamp (with timezone offset) to 'YYYY-MM-DD HH:MM:SS' format.
+    
+    :param iso_timestamp: The original timestamp from Instagram API (e.g., '2024-12-16T02:27:28+0000')
+    :return: Reformatted timestamp string (e.g., '2024-12-16 02:27:28')
+    """
+    # Parse the timestamp string and ignore the timezone
+    dt = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S%z")
+    # Reformat the timestamp to BigQuery's required format
+    return dt.strftime("%Y-%m-%d %H:%M:%S")'''
+'''def format_timestamp(timestamp):
+    '''"""Format ISO 8601 timestamp to desired format."""'''
+    try:
+        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S%z")
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        print(f"Error formatting timestamp: {e}")
+        return timestamp'''
+def format_timestamp(timestamp):
+    '''Format ISO 8601 timestamp to BigQuery-compatible format.'''
+    from datetime import datetime
+    try:
+        dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S%z")
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError as e:
+        print(f"Error formatting timestamp: {e}")
+        return timestamp
+    
 if __name__ == "__main__":
     config_data = get_config_data()
     

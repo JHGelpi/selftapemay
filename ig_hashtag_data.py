@@ -1,5 +1,5 @@
 import requests
-from utils import get_config_data, configure_logging
+from utils import get_config_data, configure_logging, format_timestamp, extract_hashtags
 from google.cloud import bigquery
 from datetime import datetime, timezone
 
@@ -113,10 +113,21 @@ def hashtag_query():
     query_job = client.query(query, job_config=job_config)
     print(f"Executing query: {query}")
     
+    #result_list = list(query_job.result())  # Convert result to a list once
+    #count = result_list[0].count if result_list else 0  # Safely check count
+    #result_list = list(query_job.result())  # Convert result to a list once
+    #count = result_list[0]['count'] if result_list else 0  # Access 'count' as a dictionary key
     result_list = list(query_job.result())  # Convert result to a list once
-    count = result_list[0].count if result_list else 0  # Safely check count
 
-    if count == 0:
+    
+    if result_list:
+        print("Query result fields:", result_list[0].keys())  # Check available fields
+        count = result_list[0].get('count', 0)  # Use .get() to avoid KeyError
+    else:
+        count = 0
+    
+    if len(result_list) == 0:
+    #if count == 0:
         # If hashtag_id does not exist, call `hashtag_id` function to create it
         print("Hashtag not found in BigQuery. Creating a new hashtag ID.")
         hashtagid = hashtag_id()
@@ -144,8 +155,37 @@ def hashtag_query():
         if len(hashtag_data) > 0:
             print("Recent post data: ", hashtag_data[0]['id'])
             for post in hashtag_data:  # Iterate directly over each dictionary in the list
-                print("Calling post_details for post ID: ", post['id'])
-                post_details(post['id'])  # Call `post_details` with the `id` from the current dictionary
+                '''
+                I need to query BigQuery table to determine if I need to call post_details().  If the post already exists in BigQuery then there is no need
+                to get the data again
+                '''
+                query = f"SELECT id FROM `self-tape-may.self_tape_may_data.tblInstagramData` WHERE id = @id;"
+                job_config = bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ScalarQueryParameter("id", "STRING", post['id']),
+                    ]
+                )
+                query_job = client.query(query, job_config=job_config)
+                print(f"Executing query: {query}")
+                
+                #result_list = list(query_job.result())  # Convert result to a list once
+                #count = result_list[0].count if result_list else 0  # Safely check count
+                #result_list = list(query_job.result())  # Convert result to a list once
+                #count = result_list[0]['count'] if result_list else 0  # Access 'count' as a dictionary key
+                result_list = list(query_job.result())  # Convert result to a list once
+
+                if result_list:
+                    print("Query result fields:", result_list[0].keys())  # Check available fields
+                    count = result_list[0].get('count', 0)  # Use .get() to avoid KeyError
+                else:
+                    count = 0
+
+                if len(result_list) == 0:
+                #if count == 0:
+                    print("Post does not exist.  Calling post_details for post ID: ", post['id'])
+                    post_details(post['id'])  # Call `post_details` with the `id` from the current dictionary
+                else:
+                    print(f"Post {post['id']} already exists.  Exiting...")
 
             return hashtag_data[0]['id']  # Return the first hashtag's ID
         else:
@@ -167,7 +207,10 @@ def post_details(post_id, childpost=False):
     #user_id = config_data[3]
     access_token = config_data[8]
     api_version = config_data[5]
-    api_fields = ['id','media_type','owner','timestamp', 'shortcode', 'caption']
+    if childpost:
+        api_fields = ['id','media_type','shortcode','owner','timestamp']
+    else:
+        api_fields = ['id','media_type', 'shortcode', 'owner','timestamp','caption']
     '''
     I'm going to have to leverage the children endpoint to get child data.  
     GET /{id-media-id}/children
@@ -181,7 +224,7 @@ def post_details(post_id, childpost=False):
         'access_token': access_token
     }
 
-    print(f"Making request to get post details with URL: {url} and params: {params}")
+    print(f"Making request to get post details with URL: {url}")
     response = requests.get(url, params=params)
     print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
 
@@ -190,11 +233,31 @@ def post_details(post_id, childpost=False):
         #if 'data' in post_data and len(post_data['data']) > 0:
         if post_data:
             print("Post data: ", post_data)  # Print all data returned in the response
+            #post_url = f"https://www.instagram.com/p/{post_data['shortcode']}"
+            id = post_data.get('id', '')
+            #owner_id = post_data.get('owner', {})
+            owner_id = post_data.get('owner', {}).get('id', '')
+            post_url = f"https://www.instagram.com/p/{post_data.get('shortcode', '')}"
+            media_type = post_data.get('media_type', '')
+            original_timestamp = post_data.get('timestamp', '')
+            formatted_timestamp = format_timestamp(original_timestamp)
             
+            caption = post_data.get('caption', '') if 'caption' in post_data else ''
             if childpost:
                 # don't return to children_posts function
+                print ("Child post data: ", post_data)
+                '''
+                Here is where I need to create a query to append the post data to the BigQuery table tblInstagramData
+                '''
+                get_data_and_write_to_gcp(id, post_url,media_type, formatted_timestamp, owner_id)
+                
                 return post_data
             else:
+                print ("Parent post data: ", post_data)
+                '''
+                Here is where I need to create a query to append the post data to the BigQuery table tblInstagramData
+                '''
+                get_data_and_write_to_gcp(id, post_url, media_type, formatted_timestamp, owner_id, caption)
                 children_posts(post_id)
                 return post_data  # Return the entire response JSON
         else:
@@ -217,14 +280,16 @@ def children_posts(post_id):
     user_id = config_data[3]
     access_token = config_data[8]
     api_version = config_data[5]
+    api_fields = ['id','media_type', 'caption']
 
     url = f'https://graph.facebook.com/{api_version}/{post_id}/children'
     params = {
+        #'fields': ','.join(api_fields),
         'user_id': user_id,
         'access_token': access_token
     }
 
-    print(f"Making request to get children with URL: {url} and params: {params}")
+    print(f"Making request to get children with URL: {url}")
     response = requests.get(url, params=params)
     print(f"Response Status Code: {response.status_code}, Response Content: {response.text}")
 
@@ -232,9 +297,10 @@ def children_posts(post_id):
         children = response.json()
         print("children: ", children)
         if 'data' in children and len(children['data']) > 0:
-            for post in children['data']:
-                print("Children detected.  Passing results to post_details() ", post)
-                post_details(post, True)
+            for child in children['data']:
+                print("Children detected: ", child)
+                # Extract the 'id' value from the child and call post_details with it
+                post_details(child['id'], True)
                 
         else:
             print("No child posts.")
@@ -247,12 +313,53 @@ def user_details():
     '''This function will simply return the username based on the owner id provided when
     executing the API call in post_details().'''
 
-def get_data_and_write_to_gcp():
+def get_data_and_write_to_gcp(id, url, type, timestamp, user_id, caption='', username=''):
     '''This function will obtain the data necessary (post_details, user_details) and
     then update the necessary GCP tables with the data.  It will also maintain
     the processes necessary to keep data clean and de-duplicated'''
-    hashtag_id = hashtag_id()
-    print ("Completed using: ", hashtag_id)
+    project_id = init_bigquery()
+    #config_data = get_config_data()
+    #user_id = config_data[3]
+    #access_token = config_data[8]
+
+    table_ref = 'self-tape-may.self_tape_may_data.tblInstagramData'
+    client = bigquery.Client(project=project_id)
+
+    # Correctly extract values for insertion
+    config_data = get_config_data()
+    foundational_hashtag = config_data[4]
+    campaign_hashtag = config_data[14]
+    hashtag_0, hashtag_1 = extract_hashtags(caption, foundational_hashtag, campaign_hashtag)
+    if hashtag_1 == None:
+        campaign_flag = False
+    else:
+        campaign_flag = True
+
+    # Prepare data for BigQuery (ensure schema compatibility)
+    print (f"Preparing data for post_id: {id}")
+    rows_to_insert = [{
+            "id": id,
+            "url": url,
+            "type": type,
+            "timestamp": timestamp,
+            "user_id": user_id,
+            "ownerUsername": username,
+            "hashtags": caption,
+            "hashtag_0": hashtag_0,
+            "hashtag_1": hashtag_1,
+            "campaignFlag": campaign_flag
+        }]
+
+    print(f"Inserting data into BigQuery: {rows_to_insert}")
+    errors = client.insert_rows_json(table_ref, rows_to_insert)  # API call to append rows
+
+    if errors == []:
+        print("Data successfully appended to BigQuery.")
+    else:
+        print(f"Errors while appending data to BigQuery: {errors}")
+    
+    #hashtag_id = hashtag_id()
+    #print ("Completed using: ", hashtag_id)
     #hashtag_query(hashtag_id())
 
 if __name__ == "__main__":

@@ -6,18 +6,22 @@ from datetime import datetime, timezone
 def init_bigquery():
     # Initialize the BigQuery client
     project_id = 'self-tape-may'
+    print (f"Initializing BigQuery project with {project_id}")
+
     return project_id
 
 def hashtag_id():
     '''Function to download ID of hashtags to be used.
     This should only be run once a year to obtain the IDs for the foundational hashtag
     (#selftapemay) and the campaign hashtag (e.g. #selftapemaylotr).'''
-    
+    print ("Starting the hashtag_id function...")
     config_data = get_config_data()
     user_id = config_data[3]
     q = config_data[4]
     access_token = config_data[8]
     app_id = config_data[1]
+
+    print (f"Configuration data loaded from get_config_data(): user_id: {user_id}, q: {q}, access_token [redacted], app_id: {app_id}")
 
     url = 'https://graph.facebook.com/ig_hashtag_search'
     params = {
@@ -38,6 +42,8 @@ def hashtag_id():
             project_id = init_bigquery()
 
             table_ref = 'self-tape-may.self_tape_may_data.tbl_instagram_hashtag_data'
+
+            print (f"Starting bigquery client with table_ref: {table_ref} and project_id: {project_id}")
             client = bigquery.Client(project=project_id)
 
             # Query the table to check if the hashtag_id already exists
@@ -51,8 +57,10 @@ def hashtag_id():
                     bigquery.ScalarQueryParameter("hashtag_id", "STRING", hashtag_data[0]['id']),
                 ]
             )
+            print ("Executing BigQuery job...")
             query_job = client.query(query, job_config=job_config)
             result = query_job.result()
+            print (f"Query completed with the following result: {result}")
             row = list(result)[0]  # Fetch the first row
 
             if row['count'] > 0:
@@ -89,8 +97,9 @@ def hashtag_query():
     config_data = get_config_data()
     user_id = config_data[3]
     access_token = config_data[8]
-
     table_ref = 'self-tape-may.self_tape_may_data.tbl_instagram_hashtag_data'
+
+    print (f"Preparing BigQuery client with following variables: project_id: {project_id}, user_id: {user_id}, access_token: [redacted], table_ref: {table_ref}")
     client = bigquery.Client(project=project_id)
 
     # Query the table to check if the hashtag_id already exists
@@ -100,17 +109,18 @@ def hashtag_query():
         WHERE hashtag = @hashtag
         GROUP BY hashtag_id
     """
+
+    print (f"SQL loaded: {query}")
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter("hashtag", "STRING", config_data[4]),
         ]
     )
-    
+    print (f"job_config loaded: {job_config}")
     query_job = client.query(query, job_config=job_config)
     print(f"Executing query: {query}")
 
     result_list = list(query_job.result())  # Convert result to a list once
-
     
     if result_list:
         print("Query result fields:", result_list[0].keys())  # Check available fields
@@ -156,7 +166,7 @@ def hashtag_query():
                     ]
                 )
                 query_job = client.query(query, job_config=job_config)
-                print(f"Executing query: {query}")
+                print(f"Executing query: {query} using the job_config: {job_config}")
 
                 result_list = list(query_job.result())  # Convert result to a list once
 
@@ -193,14 +203,17 @@ def post_details(post_id, childpost=False, child_caption='', parent_id = ''):
     api_version = config_data[5]
     if childpost:
         api_fields = ['id','media_type','shortcode','owner','timestamp']
+        print(f"Child post getting processed with the following config: access_token: [redacted], api_version: {api_version}, api_fields: {api_fields}")
     else:
         api_fields = ['id','media_type', 'shortcode', 'owner','timestamp','caption']
+        print(f"Parent post getting processed with the following config: access_token: [redacted], api_version: {api_version}, api_fields: {api_fields}")
+
     '''
     I'm going to have to leverage the children endpoint to get child data.  
     GET /{id-media-id}/children
     '''
 
-    print ("post_id: ", post_id)
+    print ("url being built with post_id: ", post_id)
     url = f'https://graph.facebook.com/{api_version}/{post_id}'
     
     params = {

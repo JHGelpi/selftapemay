@@ -248,6 +248,7 @@ def post_details(post_id, childpost=False, child_caption='', parent_id = ''):
                 print ("Parent post data: ", post_data)
 
                 get_data_and_write_to_gcp(id, post_url, media_type, formatted_timestamp, owner_id, caption)
+                print (f"Calling child_posts function with the following variables: post_id: {post_id}, caption: {caption}, id: {id}")
                 children_posts(post_id, caption, id)
                 return post_data  # Return the entire response JSON
         else:
@@ -289,6 +290,11 @@ def children_posts(post_id, caption, parent_id):
             for child in children['data']:
                 print("Children detected: ", child)
                 # Extract the 'id' value from the child and call post_details with it
+                '''
+                I need to figure out why parent_id is not getting added to the row for the BigQuery table.  It seems to be a
+                None value by the time it makes it to get appended to the table.
+                '''
+                print (f"Calling post_details from children_posts with variables: child id: {child['id']}, caption: {caption}, parent_id: {parent_id}")
                 post_details(child['id'], True, caption, parent_id)
                 
         else:
